@@ -1,1 +1,29 @@
-/.kombai
+.env
+.env.local
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+.DS_Store
+Thumbs.db
+
+# Run artifacts are regenerable and some contain large media
+runs/*
+!runs/.gitkeep
+
+# Recorded API responses MAY contain your token in a URL — keep them out
+# until scripts/scrub_fixtures.py has run. (The recorder scrubs on write;
+# this is belt-and-braces.)
+fixtures/http/**/*.raw.json
+
+# Hermes local state
+.hermes/
+*.log
