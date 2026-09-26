@@ -13,7 +13,7 @@ passed — not when the code is written.
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S01 | Repo skeleton, packaging & config | todo | | `Settings.from_env()` + Rule V4 negative |
+| S01 | Repo skeleton, packaging & config | done | | `Settings.from_env()` + Rule V4 negative |
 | S02 | Util layer | todo | | `pytest tests/test_jsonio.py tests/test_subproc.py` |
 
 ## Phase 1 — Domain contracts
@@ -129,7 +129,7 @@ Cross-reference `00-INDEX.md` §5. Update a row when a defect is resolved or a n
 | G11 | `Shot` field set only inferable from one example | S03 | ☐ |
 | G12 | `clients/tts.py` has no spec section | S12 | ☐ |
 | G13 | `safe_format` circular-import/NameError bug | S13 | ☐ |
-| B3 | `engine_defaults_to_hermes` used, never defined | S01 | ☐ |
+| B3 | `engine_defaults_to_hermes` used, never defined | S01 | ☑ |
 | B4 | `scan_prohibited_facts` never wired by any tool | S24 | ☐ |
 | B5 | `request_cache_key` hashes a token-bearing URL | S08 | ☐ |
 | — | "11 cards" prose vs 12-card `DAG_SPEC` vs 11 stages | S27/S32 | ☐ |
