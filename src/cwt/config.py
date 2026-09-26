@@ -41,7 +41,9 @@ def require_env(name: str, env: Mapping[str, str] | None = None) -> str:
     if not val or not val.strip():
         url = OBTAIN_URLS.get(name)
         if url:
-            raise ConfigError(f"Missing required environment variable '{name}'. Obtain it at: {url}")
+            raise ConfigError(
+                f"Missing required environment variable '{name}'. Obtain it at: {url}"
+            )
         raise ConfigError(f"Missing required environment variable '{name}'.")
     return val
 
@@ -170,15 +172,20 @@ class Settings:
         # ── Rule A2: Apify spend cap validation ──
         raw_apify_charge = source.get("APIFY_MAX_CHARGE_USD")
         if raw_apify_charge is None or raw_apify_charge.strip() == "":
-            raise ConfigError("Rule A2 violation: APIFY_MAX_CHARGE_USD is absent. A hard spend cap is required.")
+            raise ConfigError(
+                "Rule A2 violation: APIFY_MAX_CHARGE_USD is absent. A hard spend cap is required."
+            )
         try:
             apify_max_charge_usd = float(raw_apify_charge)
         except ValueError as exc:
-            raise ConfigError(f"Rule A2 violation: invalid APIFY_MAX_CHARGE_USD: {raw_apify_charge!r}") from exc
+            raise ConfigError(
+                f"Rule A2 violation: invalid APIFY_MAX_CHARGE_USD: {raw_apify_charge!r}"
+            ) from exc
 
         if apify_max_charge_usd <= 0:
             raise ConfigError(
-                f"Rule A2 violation: apify_max_charge_usd must be non-zero and positive, got: {apify_max_charge_usd}"
+                "Rule A2 violation: apify_max_charge_usd must be non-zero and positive, "
+                f"got: {apify_max_charge_usd}"
             )
 
         # ── Rule V4: Video backend chain termination validation ──
@@ -189,7 +196,8 @@ class Settings:
         )
         if not video_backend_chain or video_backend_chain[-1] != "local_ffmpeg":
             raise ConfigError(
-                f"Rule V4 violation: video_backend_chain must terminate in 'local_ffmpeg'. Got: {video_backend_chain}"
+                "Rule V4 violation: video_backend_chain must terminate in 'local_ffmpeg'. "
+                f"Got: {video_backend_chain}"
             )
 
         # ── Rule C2: Claims gate warning ──
@@ -201,7 +209,8 @@ class Settings:
 
         if not claims_gate_enabled:
             logger.warning(
-                "Rule C2 warning: claims_gate_enabled is set to False. Claims gate disabled, output unshippable."
+                "Rule C2 warning: claims_gate_enabled is set to False. "
+                "Claims gate disabled, output unshippable."
             )
 
         # ── Derived engine_defaults_to_hermes (Decision B3) ──
@@ -257,7 +266,9 @@ class Settings:
                 ["edge_tts", "piper", "silent"],
             ),
             edge_tts_voice=_get_str(source, "EDGE_TTS_VOICE", "en-US-AndrewNeural"),
-            piper_voice_path=_get_str(source, "PIPER_VOICE_PATH", "fixtures/assets/voices/en_US-ryan-high.onnx"),
+            piper_voice_path=_get_str(
+                source, "PIPER_VOICE_PATH", "fixtures/assets/voices/en_US-ryan-high.onnx"
+            ),
             # Optional backends
             hyperframes_enabled=_get_str(source, "HYPERFRAMES_ENABLED", "auto"),
             openmontage_home=_get_str(source, "OPENMONTAGE_HOME", ""),
@@ -283,6 +294,7 @@ class Settings:
         new_chain = list(chain)
         if not new_chain or new_chain[-1] != "local_ffmpeg":
             raise ConfigError(
-                f"Rule V4 violation: video_backend_chain must terminate in 'local_ffmpeg'. Got: {new_chain}"
+                "Rule V4 violation: video_backend_chain must terminate in 'local_ffmpeg'. "
+                f"Got: {new_chain}"
             )
         return replace(self, video_backend_chain=new_chain)

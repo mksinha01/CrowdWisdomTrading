@@ -26,7 +26,8 @@ EXIT_OK, EXIT_CONFIG, EXIT_TIMEOUT, EXIT_BLOCKED, EXIT_BUDGET = 0, 1, 2, 3, 4
 
 
 def _banner(settings: Settings, paths: object, offline: bool, engine: str) -> None:
-    """The config echo. This is the first debugging tool in production and it costs nothing to print."""
+    """The config echo. This is the first debugging tool in production and it costs nothing.
+    """
     try:
         from cwt.video.ffmpeg_bin import ffmpeg_path, ffmpeg_version
         ff = f"{ffmpeg_path()}  ({ffmpeg_version()})"

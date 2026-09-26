@@ -1,5 +1,6 @@
 """Tests for Settings and configuration loading (Story S01)."""
 import logging
+
 import pytest
 
 from cwt.config import ConfigError, Settings, require_env
