@@ -1,0 +1,22 @@
+# ── Core ──
+httpx==0.27.2
+pydantic==2.9.2
+python-dotenv==1.0.1
+rich==13.9.2
+tenacity==8.5.0          # declared but unused; retry.py is hand-rolled and inspectable
+
+# ── Video ──
+imageio-ffmpeg==0.5.1    # pip-installs a real ffmpeg binary; the fix for Rule W2
+Pillow==10.4.0
+
+# ── TTS ──
+edge-tts==6.1.12
+piper-tts==1.2.0         # offline fallback voice
+
+# ── Data ──
+tavily-python==0.5.0
+exa-py==2.20.0
+
+# ── No SDK for Apify by design ──
+# apify-client exists but its async surface churns. We use httpx against the
+# documented REST API so the contract is visible in our own code (see §8.4).
