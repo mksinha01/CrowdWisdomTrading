@@ -13,7 +13,7 @@ passed — not when the code is written.
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S01 | Repo skeleton, packaging & config | done | | `Settings.from_env()` + Rule V4 negative |
+| S01 | Repo skeleton, packaging & config | done | `f807115` | `Settings.from_env()` + Rule V4 negative |
 | S02 | Util layer | todo | | `pytest tests/test_jsonio.py tests/test_subproc.py` |
 
 ## Phase 1 — Domain contracts
