@@ -1,0 +1,6 @@
+CWT Video Ads Agent
+Copyright (c) 2026 CrowdWisdomTrading
+
+Third-Party Licenses and Notices:
+- Python packages and dependencies licensed under their respective terms as declared in requirements.txt.
+- OpenMontage adapter: OpenMontage is AGPL-3.0 licensed. We invoke it strictly as an external, separate process without vendoring or modifying its source code.
