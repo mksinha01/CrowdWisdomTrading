@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cwt"
+version = "0.1.0"
+description = "CWT Video Ads Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx==0.27.2",
+    "pydantic==2.9.2",
+    "python-dotenv==1.0.1",
+    "rich==13.9.2",
+    "tenacity==8.5.0",
+    "imageio-ffmpeg==0.5.1",
+    "Pillow==10.4.0",
+    "edge-tts==6.1.12",
+    "piper-tts==1.2.0",
+    "tavily-python==0.5.0",
+    "exa-py==2.20.0",
+]
+
+[project.scripts]
+cwt = "cwt.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"
