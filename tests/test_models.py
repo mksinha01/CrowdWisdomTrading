@@ -137,7 +137,7 @@ def test_render_manifest_roundtrip() -> None:
     assert model.backend_used == "local_ffmpeg"
     assert len(model.backend_chain_tried) == 3
     assert model.output["width"] == 1080
-    assert model.model_dump(mode="json") == data
+    assert model.model_dump(mode="json", exclude_none=True) == data
 
 
 # ===========================================================================
