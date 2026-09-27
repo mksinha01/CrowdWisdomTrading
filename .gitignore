@@ -28,3 +28,6 @@ fixtures/http/**/*.raw.json
 # Hermes local state
 .hermes/
 *.log
+
+# S26: submission bundle contains live API tokens in README-SUBMISSION.md — MUST NOT be committed (Rule R1)
+submission/
