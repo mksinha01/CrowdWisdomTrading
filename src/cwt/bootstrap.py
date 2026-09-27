@@ -231,7 +231,11 @@ def hermes_home() -> Path:
     home = os.environ.get("HERMES_HOME")
     if home:
         return Path(home).expanduser()
-    return Path.home() / ".hermes"
+    try:
+        return Path.home() / ".hermes"
+    except RuntimeError:
+        # Path.home() can fail in some test environments
+        return Path("~/.hermes").expanduser()
 
 
 def merge_config(template: Path, target: Path, force: bool = False) -> dict:
