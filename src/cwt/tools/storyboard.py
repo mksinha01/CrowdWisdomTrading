@@ -1,4 +1,4 @@
-"""Storyboard generation, variant judging, and beat splicing (Story S22).
+"""Storyboard generation, variant judging, beat splicing, creative review, rewriting, HTML rendering, and contact sheet generation (Stories S22 & S23).
 
 Reconstructed WOW requirements:
 | Id | Requirement | Where it is enforced |
@@ -9,19 +9,31 @@ Reconstructed WOW requirements:
 | WOW-4 | Every shot carries executable camera and lighting direction — "not decoration — they are compiled into the render" (spec line 1405) | Shot.camera validator + S14 |
 | WOW-5 | social_proof and pain_point get an explicit scoring boost because they are ~0.1% of fintech creatives but survive ~2.1× longer (spec line 4488) | beats.hook_score_boost (S05) |
 | WOW-6 | The cinematic grade — "ten lines of filtergraph is the entire difference between 'an AI slideshow' and 'a movie trailer'" (spec line 3157) | CINEMATIC_GRADE (S14) |
+
+Decisions left open in the spec and resolved here:
+- G9: _render_storyboard_html and _make_contact_sheet are named in §11.3 but never implemented in the spec.
+  The single self-contained HTML template and Pillow-based contact sheet generator are implemented here.
+- weighted_mean computed in Python: per-axis weights are fixed (§6.5 line 1525) and weighted_mean is calculated
+  in Python to eliminate discrepancies with model arithmetic.
+- Contact sheet cell source: generated stills via AssetSourcer.generate() provide honest previews with zero
+  ffmpeg and complete offline capability.
+- must_not_change default: defaults to ["visual_hook", "compliance"] and ensures "compliance" is never omitted.
 """
 
 from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import html
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+from typing_extensions import Self
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
+from cwt.clients.http_cache import HttpCache
 from cwt.clients.llm import (
     ArtifactValidationError,
     BudgetExceeded,
@@ -55,6 +67,7 @@ from cwt.domain.models import (
     MedianBeat,
     OnScreenText,
     ResearchBrief,
+    ReviewVerdict,
     Shot,
     Storyboard,
     StoryboardMeta,
@@ -63,13 +76,16 @@ from cwt.domain.models import (
     VOSegment,
     _CwtBaseModel,
 )
+from cwt.prompts.review import build_creative_review_prompt
 from cwt.prompts.script import (
     build_hook_candidates_prompt,
+    build_rewrite_prompt,
     build_storyboard_prompt,
     build_variant_judge_prompt,
 )
 from cwt.util.jsonio import read_json, write_json
 from cwt.util.paths import RunPaths
+from cwt.video.assets import AssetSourcer
 
 logger = logging.getLogger("cwt.tools.storyboard")
 
@@ -885,3 +901,704 @@ def judge_variants(
         ],
         "winner_path": str(winner_path),
     }
+
+
+# ===========================================================================
+# Part B: Creative Review, Rewriting, HTML & Contact Sheet (Story S23)
+# ===========================================================================
+
+CREATIVE_AXIS_WEIGHTS: dict[str, float] = {
+    "hook_strength": 0.25,
+    "mechanism_clarity": 0.20,
+    "proof_credibility": 0.15,
+    "emotional_arc": 0.15,
+    "brand_fit": 0.15,
+    "compliance_safety": 0.10,
+}
+
+BEAT_COLORS: dict[str, str] = {
+    "hook": "#22d3ee",
+    "problem": "#fb7185",
+    "agitation": "#fb923c",
+    "mechanism": "#fbbf24",
+    "proof": "#34d399",
+    "objection": "#818cf8",
+    "cta": "#38bdf8",
+}
+
+
+class YourRewriteChangedProtectedFields(RuntimeError):
+    """Raised when a storyboard rewrite modifies fields protected by must_not_change."""
+
+
+class RawReviewResponse(_CwtBaseModel):
+    """Raw review response from creative director LLM before python reweighting."""
+
+    verdict: Literal["pass", "request_changes"]
+    scores: dict[str, float]
+    weighted_mean: float = 0.0
+    weakest_axes: list[str] = Field(default_factory=list)
+    changes_requested: str | None = None
+    must_fix: list[str] = Field(default_factory=list)
+    must_not_change: list[str] = Field(default_factory=list)
+    best_moment: str | None = None
+
+    @model_validator(mode="after")
+    def validate_review(self) -> Self:
+        if self.verdict == "request_changes":
+            if len(self.weakest_axes) != 2:
+                raise ValueError(
+                    f"weakest_axes must have exactly 2 axes when requesting changes, got {len(self.weakest_axes)}"
+                )
+            if not self.changes_requested:
+                raise ValueError("changes_requested cannot be empty when requesting changes")
+        return self
+
+
+def _check_protected_fields(
+    before: Storyboard,
+    after: Storyboard,
+    must_not_change: list[str],
+) -> None:
+    """Enforce that fields listed in must_not_change are preserved exactly."""
+    violated: list[str] = []
+    before_dict = before.model_dump(mode="json")
+    after_dict = after.model_dump(mode="json")
+
+    before_shots = {s["id"]: s for s in before_dict.get("shots", [])}
+    after_shots = {s["id"]: s for s in after_dict.get("shots", [])}
+
+    for item in must_not_change:
+        item_clean = item.strip()
+        if not item_clean:
+            continue
+
+        if item_clean in before_shots:
+            if item_clean not in after_shots:
+                violated.append(f"{item_clean} (deleted)")
+            elif before_shots[item_clean] != after_shots[item_clean]:
+                violated.append(item_clean)
+        elif item_clean in before_dict:
+            if before_dict[item_clean] != after_dict.get(item_clean):
+                violated.append(item_clean)
+        else:
+            if item_clean == "risk_disclosure":
+                before_disc = before_dict.get("compliance", {}).get("risk_disclosure_text")
+                after_disc = after_dict.get("compliance", {}).get("risk_disclosure_text")
+                if before_disc != after_disc:
+                    violated.append(item_clean)
+
+    if violated:
+        raise YourRewriteChangedProtectedFields(
+            f"Your rewrite changed protected fields ({', '.join(violated)}). "
+            f"Fix ONLY what was asked. Preserve everything else EXACTLY."
+        )
+
+
+async def _score_storyboard(
+    settings: Settings,
+    paths: RunPaths,
+    *,
+    storyboard: Storyboard,
+    patterns: AdPatterns | dict[str, Any],
+    client: LLMClient | None = None,
+) -> ReviewVerdict:
+    """Score a storyboard against winning-ad patterns using the creative-director rubric. STRONG tier."""
+    threshold = float(getattr(settings, "creative_threshold", 8.0))
+
+    storyboard_str = storyboard.model_dump_json(indent=2)
+    patterns_str = (
+        patterns.model_dump_json(indent=2)
+        if hasattr(patterns, "model_dump_json")
+        else json.dumps(patterns, indent=2)
+    )
+
+    prompt = build_creative_review_prompt(
+        storyboard=storyboard_str,
+        patterns=patterns_str,
+        threshold=threshold,
+    )
+
+    if client is None:
+        client = _get_llm_client(settings, paths)
+
+    raw_res = await client.complete_validated(
+        tier=Tier.STRONG,
+        messages=[{"role": "user", "content": prompt}],
+        schema=RawReviewResponse,
+        temperature=0.0,
+        stage="score_storyboard",
+    )
+
+    # Recompute weighted_mean in Python; do not trust model arithmetic
+    scores = {k: float(raw_res.scores.get(k, 0.0)) for k in CREATIVE_AXIS_WEIGHTS}
+    calc_weighted_mean = round(
+        sum(scores[k] * w for k, w in CREATIVE_AXIS_WEIGHTS.items()), 2
+    )
+
+    verdict_str: Literal["pass", "request_changes"] = (
+        "pass" if calc_weighted_mean >= threshold else "request_changes"
+    )
+
+    if verdict_str == "request_changes":
+        if len(raw_res.weakest_axes) == 2:
+            weakest_axes = list(raw_res.weakest_axes)
+        else:
+            sorted_axes = sorted(CREATIVE_AXIS_WEIGHTS.keys(), key=lambda k: scores[k])
+            weakest_axes = sorted_axes[:2]
+        changes_requested = (
+            raw_res.changes_requested
+            or f"Scores on {weakest_axes[0]} and {weakest_axes[1]} did not clear the threshold {threshold:.1f}."
+        )
+        must_fix = list(raw_res.must_fix) if raw_res.must_fix else list(weakest_axes)
+    else:
+        weakest_axes = list(raw_res.weakest_axes)
+        changes_requested = None
+        must_fix = []
+
+    # Preserve must_not_change; ensure compliance is never dropped
+    must_not_change = list(raw_res.must_not_change)
+    if not must_not_change:
+        must_not_change = ["visual_hook", "compliance"]
+    elif "compliance" not in must_not_change:
+        must_not_change.append("compliance")
+
+    # Increment round from existing verdict on disk
+    verdict_file = paths.artifacts / "review_verdict.json"
+    current_round = 1
+    if verdict_file.exists():
+        try:
+            prev_data = read_json(verdict_file)
+            current_round = int(prev_data.get("round", 0)) + 1
+        except Exception:
+            current_round = 1
+
+    return ReviewVerdict(
+        schema_version=SCHEMA_VERSION,
+        reviewer="cwt-creative-director",
+        round=current_round,
+        verdict=verdict_str,
+        scores=scores,
+        weighted_mean=calc_weighted_mean,
+        threshold=threshold,
+        weakest_axes=weakest_axes,
+        changes_requested=changes_requested,
+        must_fix=must_fix,
+        must_not_change=must_not_change,
+    )
+
+
+def score_storyboard(
+    *,
+    settings: Settings,
+    paths: RunPaths,
+    client: LLMClient | None = None,
+) -> dict[str, Any]:
+    """Creative-director self-check BEFORE requesting review.
+
+    CALL THIS: yourself, on the `script` card, BEFORE calling `kanban_request_review`. Do not send
+    work you know is weak — the director will return it and cost a round.
+
+    WHEN NOT TO CALL: do not call it to "argue" with a director verdict, and do not call it on a
+    loser variant. It scores `artifacts/storyboard.json` only.
+
+    WRITES artifacts/review_verdict.json
+    RETURNS {"verdict","weighted_mean","threshold","weakest_axes","round","changes_requested"}
+    """
+    store = ArtifactStore(paths, run_id=paths.run_dir.name)
+    sb_raw = store.read("storyboard")
+    sb = Storyboard.model_validate(sb_raw)
+
+    patterns = store.read("ad_patterns")
+    verdict = _run_async(
+        _score_storyboard(settings, paths, storyboard=sb, patterns=patterns, client=client)
+    )
+
+    store.write("review_verdict", verdict)
+
+    # Keep storyboard creative_scores synchronized with latest director verdict
+    sb.generation.creative_scores = CreativeScores(
+        hook_strength=verdict.scores.get("hook_strength", 8.5),
+        mechanism_clarity=verdict.scores.get("mechanism_clarity", 8.5),
+        proof_credibility=verdict.scores.get("proof_credibility", 8.5),
+        emotional_arc=verdict.scores.get("emotional_arc", 8.0),
+        brand_fit=verdict.scores.get("brand_fit", 8.5),
+        compliance_safety=verdict.scores.get("compliance_safety", 9.0),
+        weighted_mean=verdict.weighted_mean,
+        threshold=verdict.threshold,
+        verdict=verdict.verdict,
+    )
+    store.write("storyboard", sb)
+
+    return {
+        "verdict": verdict.verdict,
+        "weighted_mean": verdict.weighted_mean,
+        "threshold": verdict.threshold,
+        "weakest_axes": verdict.weakest_axes,
+        "round": verdict.round,
+        "changes_requested": verdict.changes_requested,
+    }
+
+
+async def _apply_rewrite(
+    settings: Settings,
+    paths: RunPaths,
+    *,
+    storyboard: Storyboard,
+    verdict: ReviewVerdict | dict[str, Any],
+    client: LLMClient | None = None,
+) -> Storyboard:
+    """Apply a review verdict's instructions to produce a corrected storyboard. STRONG tier."""
+    if isinstance(verdict, dict):
+        verdict = ReviewVerdict.model_validate(verdict)
+
+    store = ArtifactStore(paths, run_id=paths.run_dir.name)
+    try:
+        brief = store.read("research_brief")
+        prohibited = (
+            brief.prohibited_facts
+            if hasattr(brief, "prohibited_facts") and brief.prohibited_facts
+            else DEFAULT_PROHIBITED_FACTS
+        )
+    except Exception:
+        prohibited = DEFAULT_PROHIBITED_FACTS
+
+    try:
+        patterns = store.read("ad_patterns")
+        median_beats = (
+            patterns.aggregate.median_beat_timeline
+            if hasattr(patterns, "aggregate") and hasattr(patterns.aggregate, "median_beat_timeline")
+            else []
+        )
+    except Exception:
+        median_beats = []
+
+    prohibited_block = (
+        f"PROHIBITED FACTS (must never appear in any form):\n{_format_prohibited_facts(prohibited)}"
+    )
+
+    base_prompt = build_rewrite_prompt(
+        verdict=verdict.verdict,
+        scores=json.dumps(verdict.scores),
+        weakest_axes=", ".join(verdict.weakest_axes),
+        changes_requested=verdict.changes_requested or "",
+        must_fix=", ".join(verdict.must_fix),
+        must_not_change=", ".join(verdict.must_not_change),
+        prohibited_block=prohibited_block,
+    )
+    full_prompt = (
+        f"{base_prompt}\n\n"
+        f"--- CURRENT STORYBOARD ---\n"
+        f"{storyboard.model_dump_json(indent=2)}\n"
+        f"--- END ---"
+    )
+
+    validation_ctx: dict[str, Any] = {
+        "median_beat_timeline": [
+            mb.model_dump() if hasattr(mb, "model_dump") else mb for mb in median_beats
+        ],
+        "prohibited_facts": [
+            pf.model_dump() if hasattr(pf, "model_dump") else pf for pf in prohibited
+        ],
+    }
+
+    if client is None:
+        client = _get_llm_client(settings, paths)
+
+    rewritten = await client.complete_validated(
+        tier=Tier.STRONG,
+        messages=[{"role": "user", "content": full_prompt}],
+        schema=Storyboard,
+        temperature=0.2,
+        max_tokens=8192,
+        stage="apply_rewrite",
+        validation_context=validation_ctx,
+    )
+
+    # Enforce must_not_change rule (Rule REWRITE_PROMPT / line 1459)
+    _check_protected_fields(
+        before=storyboard,
+        after=rewritten,
+        must_not_change=verdict.must_not_change,
+    )
+
+    rewritten.generation.revision_rounds = storyboard.generation.revision_rounds + 1
+    return rewritten
+
+
+def apply_rewrite(
+    *,
+    settings: Settings,
+    paths: RunPaths,
+    verdict_path: str | None = None,
+    splice_list: list[dict[str, Any]] | None = None,
+    client: LLMClient | None = None,
+) -> dict[str, Any]:
+    """Apply a review verdict's instructions OR a splice list. Preserves must_not_change.
+
+    REWRITES artifacts/storyboard.json in place; increments generation.revision_rounds
+    RETURNS {"artifact_path","revision_rounds","applied":[...],"preserved":[...],"valid":true}
+    """
+    store = ArtifactStore(paths, run_id=paths.run_dir.name)
+    sb_raw = store.read("storyboard")
+    storyboard = Storyboard.model_validate(sb_raw)
+
+    if splice_list is not None:
+        variants_dir = paths.artifacts / "variants"
+        variants: dict[str, Storyboard] = {}
+        for angle in ANGLES:
+            var_file = variants_dir / f"{angle}.json"
+            if var_file.exists():
+                variants[angle] = Storyboard.model_validate(read_json(var_file))
+
+        rewritten = _apply_splices(storyboard, splice_list, variants)
+        rewritten.generation.revision_rounds = storyboard.generation.revision_rounds + 1
+        applied = [s.get("shot_id", "") for s in splice_list if isinstance(s, dict)]
+        preserved = ["visual_hook", "compliance"]
+    else:
+        if verdict_path:
+            verdict_data = read_json(Path(verdict_path))
+            verdict = ReviewVerdict.model_validate(verdict_data)
+        else:
+            verdict_raw = store.read("review_verdict")
+            verdict = ReviewVerdict.model_validate(verdict_raw)
+
+        rewritten = _run_async(
+            _apply_rewrite(settings, paths, storyboard=storyboard, verdict=verdict, client=client)
+        )
+        applied = list(verdict.must_fix or verdict.weakest_axes)
+        preserved = list(verdict.must_not_change)
+
+    store.write("storyboard", rewritten)
+
+    return {
+        "artifact_path": str(paths.artifacts / "storyboard.json"),
+        "revision_rounds": rewritten.generation.revision_rounds,
+        "applied": applied,
+        "preserved": preserved,
+        "valid": True,
+    }
+
+
+# ===========================================================================
+# HTML Rendering & Contact Sheet (spec §11.3)
+# ===========================================================================
+
+STORYBOARD_HTML = """<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>{title} — Storyboard</title>
+<style>
+  :root {{ --bg:#050505; --card:#0d0d0d; --line:#1e1e1e; --accent:#22d3ee;
+           --text:#cbd5e1; --dim:#64748b; }}
+  *{{box-sizing:border-box;margin:0;padding:0}}
+  body{{background:var(--bg);color:var(--text);font:14px/1.6 system-ui,sans-serif;padding:32px}}
+  h1{{font-size:24px;font-weight:800;letter-spacing:-.02em}}
+  h1 span{{background:linear-gradient(90deg,var(--accent),#818cf8);
+           -webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+  .meta{{color:var(--dim);margin:8px 0 24px}}
+  .hook{{background:var(--card);border-left:3px solid var(--accent);
+         padding:16px 20px;margin-bottom:24px;border-radius:0 8px 8px 0}}
+  .beat-ribbon{{display:flex;height:38px;border-radius:6px;overflow:hidden;margin-bottom:24px}}
+  .beat{{display:flex;align-items:center;justify-content:center;font-size:11px;
+         font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+         border-right:1px solid var(--bg)}}
+  .shot{{background:var(--card);border:1px solid var(--line);border-radius:10px;
+         padding:18px;margin-bottom:12px;display:grid;
+         grid-template-columns:64px 1fr 220px;gap:18px}}
+  .sid{{font:700 18px/1 ui-monospace,monospace;color:var(--accent)}}
+  .sid small{{display:block;color:var(--dim);font:400 11px/1.8 system-ui}}
+  .desc{{margin-bottom:10px}}
+  .vo{{color:#94a3b8;font-style:italic;border-left:2px solid var(--line);padding-left:12px}}
+  .tech{{font:11px/1.9 ui-monospace,monospace;color:var(--dim)}}
+  .tech b{{color:var(--text);font-weight:600}}
+  .swatches{{display:flex;gap:4px;margin-top:8px}}
+  .sw{{width:20px;height:20px;border-radius:4px;border:1px solid var(--line)}}
+  .scores{{display:flex;gap:24px;margin:24px 0;flex-wrap:wrap}}
+  .score{{background:var(--card);border:1px solid var(--line);border-radius:8px;
+          padding:12px 18px;min-width:120px}}
+  .score b{{display:block;font-size:22px;color:var(--accent)}}
+  .score small{{color:var(--dim);font-size:11px;text-transform:uppercase;
+                letter-spacing:.06em}}
+</style></head><body>
+<h1>CrowdWisdomTrading — <span>{angle_label}</span></h1>
+<div class="meta">{duration}s · {aspect} · {resolution} · run {run_id}</div>
+
+<div class="hook">
+  <b>Visual hook:</b> {hook_overlay}<br>
+  <span style="color:var(--dim)">{hook_description}</span><br>
+  <span style="color:var(--dim);font-size:12px">
+    Why it stops the scroll: {hook_why}</span>
+</div>
+
+<div class="beat-ribbon">{beat_ribbon}</div>
+
+{shot_cards}
+
+<div class="scores">{score_cards}</div>
+
+<h2 style="font-size:15px;margin:24px 0 12px;color:var(--dim);
+           text-transform:uppercase;letter-spacing:.08em">Voiceover</h2>
+<div class="vo" style="font-size:15px;line-height:1.9">{vo_text}</div>
+</body></html>
+"""
+
+
+def _beat_ribbon(sb: Storyboard) -> str:
+    """Build flex ribbon with one cell per beat, width proportional to duration, distinct brand colors."""
+    cells: list[str] = []
+    total_dur = max(1.0, sb.meta.total_duration_s)
+    for b in sb.beats:
+        b_name = b.beat.value if hasattr(b.beat, "value") else str(b.beat)
+        dur = max(0.1, b.end_s - b.start_s)
+        color = BEAT_COLORS.get(b_name, "#22d3ee")
+        cells.append(
+            f'<div class="beat" style="flex:{dur:.2f};background:{color};color:#050505" '
+            f'title="{b_name}: {b.start_s:.1f}s - {b.end_s:.1f}s">{b_name}</div>'
+        )
+    return "".join(cells)
+
+
+def _score_cards(sb: Storyboard) -> str:
+    """Build cards for each creative axis and the weighted mean against threshold."""
+    cards: list[str] = []
+    cs = sb.generation.creative_scores if sb.generation else None
+    scores: dict[str, float] = {}
+    weighted_mean = 8.5
+    threshold = 8.0
+    verdict = "pass"
+
+    if cs:
+        scores = {
+            "hook_strength": cs.hook_strength,
+            "mechanism_clarity": cs.mechanism_clarity,
+            "proof_credibility": cs.proof_credibility,
+            "emotional_arc": cs.emotional_arc,
+            "brand_fit": cs.brand_fit,
+            "compliance_safety": cs.compliance_safety,
+        }
+        weighted_mean = cs.weighted_mean
+        threshold = cs.threshold
+        verdict = cs.verdict
+    else:
+        scores = {k: 8.5 for k in CREATIVE_AXIS_WEIGHTS}
+
+    for axis, score in scores.items():
+        label = axis.replace("_", " ")
+        cards.append(
+            f'<div class="score">'
+            f'<b>{score:.1f}</b>'
+            f'<small>{label}</small>'
+            f'</div>'
+        )
+
+    cards.append(
+        f'<div class="score" style="border-color:var(--accent)">'
+        f'<b>{weighted_mean:.2f} <span style="font-size:13px;color:var(--dim)">/ {threshold:.1f}</span></b>'
+        f'<small>Weighted Mean ({verdict})</small>'
+        f'</div>'
+    )
+    return "".join(cards)
+
+
+def _shot_card(shot: Shot, sb: Storyboard) -> str:
+    """Build individual shot card for storyboard.html."""
+    b_name = shot.beat.value if hasattr(shot.beat, "value") else str(shot.beat)
+    cam_move = shot.camera.move.value if hasattr(shot.camera.move, "value") else str(shot.camera.move)
+
+    vo_segment = next((seg for seg in sb.voiceover.segments if seg.shot_id == shot.id), None)
+    vo_html = ""
+    if vo_segment and vo_segment.text.strip():
+        vo_html = f'<div class="vo" style="margin-top:8px">"{html.escape(vo_segment.text)}"</div>'
+
+    ost_items = []
+    for ost in shot.on_screen_text:
+        if ost.text.strip():
+            ost_items.append(
+                f'<div style="margin-top:6px;font-size:12px;color:var(--accent)"><b>TEXT:</b> "{html.escape(ost.text)}"</div>'
+            )
+    ost_html = "".join(ost_items)
+
+    disclosure_html = ""
+    if sb.compliance.risk_disclosure_present and (
+        shot.id == sb.compliance.risk_disclosure_shot_id
+        or "risk" in shot.description.lower()
+        or (vo_segment and "risk" in vo_segment.text.lower())
+    ):
+        disclosure_html = (
+            f'<div style="margin-top:8px;font-size:12px;color:var(--accent)">'
+            f'<b>Disclosure:</b> {html.escape(sb.compliance.risk_disclosure_text)}'
+            f'</div>'
+        )
+
+    swatches = "".join(
+        f'<div class="sw" style="background:{c}" title="{c}"></div>'
+        for c in shot.palette
+    )
+
+    return f"""<div class="shot">
+  <div class="sid">
+    {shot.id}
+    <small>{shot.start_s:.1f}s – {shot.start_s + shot.duration_s:.1f}s<br>({shot.duration_s:.1f}s)</small>
+    <small style="color:var(--accent);text-transform:uppercase;margin-top:4px">{b_name}</small>
+  </div>
+  <div class="desc">
+    <div>{html.escape(shot.description)}</div>
+    {ost_html}
+    {vo_html}
+    {disclosure_html}
+  </div>
+  <div class="tech">
+    <div><b>Camera:</b> {cam_move} ({shot.camera.lens_mm}mm, {shot.camera.depth_of_field})</div>
+    <div><b>Lighting:</b> {shot.lighting.contrast}, {shot.lighting.colour_temp_k}K</div>
+    <div><b>Asset:</b> {shot.asset.kind} ({shot.asset.ref})</div>
+    <div class="swatches">{swatches}</div>
+  </div>
+</div>"""
+
+
+def _render_storyboard_html(sb: Storyboard) -> str:
+    """Render self-contained HTML representation of the storyboard."""
+    angle_str = sb.meta.angle.value if hasattr(sb.meta.angle, "value") else str(sb.meta.angle)
+    angle_label = angle_str.replace("_", " ").title()
+
+    shot_cards_html = "\n".join(_shot_card(s, sb) for s in sb.shots)
+
+    return STORYBOARD_HTML.format(
+        title=html.escape(sb.meta.product),
+        angle_label=html.escape(angle_label),
+        duration=f"{sb.meta.total_duration_s:.1f}",
+        aspect=html.escape(sb.meta.aspect_ratio),
+        resolution=html.escape(sb.meta.resolution),
+        run_id=html.escape(sb.meta.run_id),
+        hook_overlay=html.escape(sb.visual_hook.text_overlay),
+        hook_description=html.escape(sb.visual_hook.first_3_seconds),
+        hook_why=html.escape(sb.visual_hook.why_it_stops_the_scroll),
+        beat_ribbon=_beat_ribbon(sb),
+        shot_cards=shot_cards_html,
+        score_cards=_score_cards(sb),
+        vo_text=html.escape(sb.voiceover.full_text),
+    )
+
+
+def render_storyboard_html(
+    *,
+    settings: Settings,
+    paths: RunPaths,
+    storyboard_path: str | None = None,
+) -> dict[str, Any]:
+    """Human-readable HTML. The brief requires the storyboard be 'saved and shared in
+    json human readable format' — the JSON is the machine artifact, this is what a
+    human reads.
+
+    WRITES artifacts/storyboard.html
+    RETURNS {"artifact_path","shots_rendered","bytes"}
+    """
+    if storyboard_path:
+        sb_file = Path(storyboard_path)
+        data = read_json(sb_file)
+        sb = Storyboard.model_validate(data)
+    else:
+        store = ArtifactStore(paths, run_id=paths.run_dir.name)
+        sb = store.read("storyboard")
+
+    html_content = _render_storyboard_html(sb)
+    out_file = paths.artifacts / "storyboard.html"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(html_content, encoding="utf-8")
+
+    return {
+        "artifact_path": str(out_file),
+        "shots_rendered": len(sb.shots),
+        "bytes": len(html_content.encode("utf-8")),
+    }
+
+
+def _make_contact_sheet(
+    sb: Storyboard,
+    paths: RunPaths,
+    *,
+    cols: int = 4,
+    rows: int = 3,
+    settings: Settings | None = None,
+) -> Path:
+    """Build a 4x3 grid PNG of each shot's first frame using Pillow. No ffmpeg required."""
+    from PIL import Image, ImageDraw
+
+    if settings is None:
+        settings = Settings.from_env()
+
+    cache = HttpCache(paths.cache, offline=True)
+    sourcer = AssetSourcer(paths=paths, settings=settings, cache=cache)
+
+    total_w = 1080
+    gutter = 2
+    base_w = (total_w - (cols - 1) * gutter) // cols
+    rem = (total_w - (cols - 1) * gutter) % cols
+    col_widths = [base_w + (1 if i < rem else 0) for i in range(cols)]
+
+    # 9:16 aspect ratio: cell_h = int(base_w * 16 / 9)
+    cell_h = int(base_w * 16 / 9)
+    total_h = rows * cell_h + (rows - 1) * gutter
+
+    # Background canvas in brand cyan (34, 211, 238) so gutters are 2px brand separator
+    brand_cyan = (34, 211, 238)
+    canvas = Image.new("RGB", (total_w, total_h), brand_cyan)
+
+    out_dir = paths.artifacts
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_sheet_path = out_dir / "contact_sheet.png"
+
+    col_x_positions: list[int] = []
+    cur_x = 0
+    for w in col_widths:
+        col_x_positions.append(cur_x)
+        cur_x += w + gutter
+
+    for idx, shot in enumerate(sb.shots[: cols * rows]):
+        r = idx // cols
+        c = idx % cols
+        w = col_widths[c]
+        x = col_x_positions[c]
+        y = r * (cell_h + gutter)
+
+        shot_asset_path = paths.assets / "generated" / f"{shot.id}.png"
+        sourcer.generate(shot, shot_asset_path)
+        shot_img = Image.open(shot_asset_path)
+        resized = shot_img.resize((w, cell_h), Image.Resampling.LANCZOS)
+
+        # Draw caption strip at bottom of cell
+        d = ImageDraw.Draw(resized)
+        strip_h = 26
+        d.rectangle([(0, cell_h - strip_h), (w, cell_h)], fill=(5, 5, 5))
+        caption_text = f"{shot.id} {shot.start_s:.1f}-{shot.start_s + shot.duration_s:.1f}s"
+        d.text((8, cell_h - strip_h + 6), caption_text, fill=brand_cyan)
+
+        canvas.paste(resized, (x, y))
+
+    canvas.save(str(out_sheet_path), format="PNG")
+    return out_sheet_path
+
+
+def make_contact_sheet(
+    *,
+    settings: Settings,
+    paths: RunPaths,
+    cols: int = 4,
+    rows: int = 3,
+) -> dict[str, Any]:
+    """4x3 grid of each shot's first frame. Pillow. No ffmpeg required.
+
+    WRITES artifacts/contact_sheet.png
+    RETURNS {"artifact_path","cols","rows","cells"}
+    """
+    store = ArtifactStore(paths, run_id=paths.run_dir.name)
+    sb = store.read("storyboard")
+    sheet_path = _make_contact_sheet(sb, paths, cols=cols, rows=rows, settings=settings)
+
+    return {
+        "artifact_path": str(sheet_path),
+        "cols": cols,
+        "rows": rows,
+        "cells": len(sb.shots),
+    }
+

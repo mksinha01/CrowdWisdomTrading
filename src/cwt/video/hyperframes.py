@@ -39,9 +39,12 @@ class HyperFramesBackend:
         if not npx:
             return Availability(False, "npx not found")
             
-        res_npx = run_tool([npx, "hyperframes", "--version"], timeout_s=30)
-        if res_npx.returncode != 0:
-            return Availability(False, "npx hyperframes not installed")
+        try:
+            res_npx = run_tool([npx, "hyperframes", "--version"], timeout_s=5)
+            if res_npx.returncode != 0:
+                return Availability(False, "npx hyperframes not installed")
+        except Exception as exc:
+            return Availability(False, f"npx hyperframes unavailable: {exc}")
             
         return Availability(True)
 

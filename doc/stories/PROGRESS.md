@@ -62,7 +62,7 @@ passed — not when the code is written.
 | S22 | Tools — storyboard A | done | | splices recorded; no caption-only shots; 11 tests green |
 | S23 | Tools — storyboard B | todo | | `must_not_change` enforcement fires |
 | S24 | Tools — claims | todo | | Rule C1 no-de-escalation; both stages recorded |
-| S25 | Tools — video | todo | | manifest parses; `qa_check` fails a 28s render |
+| S25 | Tools — video | done | | manifest parses; `qa_check` fails a 28s render |
 | S26 | Tools — bundle | todo | | `submission/` gitignored; token allowlist fires |
 
 ## Phase 6 — Hermes integration

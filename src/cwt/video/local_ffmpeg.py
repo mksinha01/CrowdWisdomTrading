@@ -225,37 +225,41 @@ def render_shot(
 
     Returns the raw ToolResult — it does NOT decide success (S16 owns Rule V3).
     """
-    render_dir = paths.render.resolve()
-    paths.render.mkdir(parents=True, exist_ok=True)
+    # Resolve out_path relative to paths.render if not already inside it
+    try:
+        out_path.resolve().relative_to(paths.render.resolve())
+        target_out = out_path.resolve()
+    except ValueError:
+        target_out = (paths.render / out_path).resolve()
 
-    # Convert paths to relative to paths.render with forward slashes
-    if asset.is_absolute():
-        asset_rel = Path(os.path.relpath(asset.resolve(), render_dir).replace("\\", "/"))
-    elif (paths.render / asset).exists():
-        asset_rel = Path(asset.as_posix())
-    elif asset.exists():
-        asset_rel = Path(os.path.relpath(asset.resolve(), render_dir).replace("\\", "/"))
-    else:
-        asset_rel = Path(asset.as_posix())
-
-    if out_path.is_absolute():
-        out_rel = Path(os.path.relpath(out_path.resolve(), render_dir).replace("\\", "/"))
-    else:
-        out_rel = Path(out_path.as_posix())
-
-    audio_rel: Path | None = None
-    if audio is not None:
-        if audio.is_absolute():
-            audio_rel = Path(os.path.relpath(audio.resolve(), render_dir).replace("\\", "/"))
-        elif (paths.render / audio).exists():
-            audio_rel = Path(audio.as_posix())
-        elif audio.exists():
-            audio_rel = Path(os.path.relpath(audio.resolve(), render_dir).replace("\\", "/"))
+    try:
+        asset.resolve().relative_to(paths.render.resolve())
+        target_asset = asset.resolve()
+    except ValueError:
+        if (paths.render / asset).exists():
+            target_asset = (paths.render / asset).resolve()
         else:
-            audio_rel = Path(audio.as_posix())
+            target_asset = asset.resolve()
+
+    if audio is not None:
+        try:
+            audio.resolve().relative_to(paths.render.resolve())
+            target_audio = audio.resolve()
+        except ValueError:
+            if (paths.render / audio).exists():
+                target_audio = (paths.render / audio).resolve()
+            else:
+                target_audio = audio.resolve()
+        audio_rel: Path | None = Path(_rel(target_audio, paths.render))
+    else:
+        audio_rel = None
+
+    # Convert paths to relative to paths.render with forward slashes (Rule V1)
+    asset_rel = Path(_rel(target_asset, paths.render))
+    out_rel = Path(_rel(target_out, paths.render))
 
     # Ensure output destination parent directory exists
-    (paths.render / out_rel).parent.mkdir(parents=True, exist_ok=True)
+    target_out.parent.mkdir(parents=True, exist_ok=True)
 
     argv = build_shot_argv(
         shot,
@@ -275,6 +279,15 @@ def render_shot(
 # ---------------------------------------------------------------------------
 # Story S16 — Part B helpers: concat, mix, loudnorm, manifest
 # ---------------------------------------------------------------------------
+
+
+@functools.lru_cache(maxsize=1)
+def _ffmpeg_has_xfade(ffmpeg_bin: str) -> bool:
+    try:
+        res = run_tool([ffmpeg_bin, "-filters"], timeout_s=10)
+        return "xfade" in res.stdout
+    except Exception:
+        return False
 
 
 def concat_clips(
@@ -337,6 +350,7 @@ def concat_clips(
     filter_parts: list[str] = []
     curr_label = "[0:v]"
     cumulative_end: float = clip_durations[0]
+    has_xfade = _ffmpeg_has_xfade(exe)
 
     for i in range(n - 1):
         next_input = f"[{i + 1}:v]"
@@ -358,7 +372,7 @@ def concat_clips(
             if t_name != TransitionName.CUT:
                 t_dur = float(getattr(transition, "duration_s", 0.0))
 
-        if t_name != TransitionName.CUT and t_dur > 0.0:
+        if has_xfade and t_name != TransitionName.CUT and t_dur > 0.0:
             offset = max(0.0, cumulative_end - t_dur)
             xfade_name = xfade_map.get(t_name, "dissolve")
             f = (
@@ -766,7 +780,8 @@ class LocalFfmpegBackend:
         sample_asset: Path | None = sample_png.resolve() if sample_png.exists() else None
 
         shot_clip_paths: list[tuple[str, Path]] = []
-        for shot in storyboard.shots:
+        active_shots = [s for s in storyboard.shots if s.duration_s > 0.0]
+        for shot in active_shots:
             clip_path = paths.render / f"shot_{shot.id}.mp4"
 
             asset_ref_str = (
@@ -780,6 +795,7 @@ class LocalFfmpegBackend:
             else:
                 placeholder = paths.assets / "placeholder.png"
                 if not placeholder.exists():
+                    placeholder.parent.mkdir(parents=True, exist_ok=True)
                     run_tool(
                         [exe, "-y", "-f", "lavfi",
                          "-i", (
@@ -820,7 +836,7 @@ class LocalFfmpegBackend:
         # ── Step 2: Concat clips ──────────────────────────────────────────────
         concat_out = paths.render / "concat_video.mp4"
         clip_files = [cp for _, cp in shot_clip_paths]
-        transitions = [shot.transition_out for shot in storyboard.shots[:-1]]
+        transitions = [shot.transition_out for shot in active_shots[:-1]]
 
         concat_res = concat_clips(
             clip_files, transitions,

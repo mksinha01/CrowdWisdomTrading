@@ -843,6 +843,14 @@ class ClaimsReport(ArtifactBase):
     rewrite_instructions: list[str] = Field(default_factory=list)
     rounds_used: int
     rounds_remaining: int
+    stage_reports: dict[str, str] | None = None
+
+    @model_serializer(mode="wrap")
+    def _serialize_claims_report(self, handler: Any) -> dict[str, Any]:
+        result = handler(self)
+        if self.stage_reports is None:
+            result.pop("stage_reports", None)
+        return result
 
 
 class RenderManifest(ArtifactBase):
