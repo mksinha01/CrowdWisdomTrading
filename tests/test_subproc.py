@@ -78,3 +78,13 @@ def test_run_tool_check_failed():
     assert err.result.returncode == 7
     assert err.result.ok is False
     assert "fatal boom" in err.result.stderr
+
+
+def test_run_tool_stdin_input():
+    """run_tool passes stdin string properly to subprocess."""
+    res = run_tool(
+        [sys.executable, "-c", "import sys; print('GOT:' + sys.stdin.read().strip())"],
+        input="hello from stdin",
+    )
+    assert res.ok is True
+    assert res.stdout.strip() == "GOT:hello from stdin"

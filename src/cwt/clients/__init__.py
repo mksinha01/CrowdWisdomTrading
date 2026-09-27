@@ -12,6 +12,9 @@ from cwt.clients.apify import (
 from cwt.clients.apify import (
     build_input as build_apify_input,
 )
+from cwt.clients.exa import (
+    exa_search,
+)
 from cwt.clients.http_cache import (
     CachedResponse,
     HttpCache,
@@ -32,6 +35,19 @@ from cwt.clients.llm import (
     extract_json,
     schema_instruction,
 )
+from cwt.clients.tavily import (
+    SearchHit,
+    tavily_search,
+)
+from cwt.clients.tts import (
+    KNOWN_EDGE_TTS_VOICES,
+    KNOWN_PIPER_VOICES,
+    TTSUnavailable,
+    VoiceoverResult,
+    WordTiming,
+    estimate_word_timings,
+    synthesize_voiceover,
+)
 
 __all__ = [
     "APIFY_BASE",
@@ -40,22 +56,34 @@ __all__ = [
     "BudgetExceeded",
     "CachedResponse",
     "HttpCache",
+    "KNOWN_EDGE_TTS_VOICES",
+    "KNOWN_PIPER_VOICES",
     "LLMClient",
     "LLMResult",
     "OfflineFixtureMissing",
     "PROFILES",
     "ProviderProfile",
     "RETRYABLE",
+    "SearchHit",
+    "TTSUnavailable",
     "Tier",
     "UnparseableJson",
+    "VoiceoverResult",
+    "WordTiming",
     "_scrub",
     "build_apify_input",
     "estimate_cost",
+    "estimate_word_timings",
+    "exa_search",
     "extract_json",
     "normalise_actor_id",
     "normalise_ad",
     "request_cache_key",
     "run_actor",
     "schema_instruction",
+    "synthesize_voiceover",
+    "tavily_search",
 ]
+
+
 

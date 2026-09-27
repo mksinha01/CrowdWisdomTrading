@@ -70,6 +70,7 @@ def run_tool(
     args: Sequence[str],
     *,
     cwd: Path | None = None,
+    input: str | None = None,
     timeout_s: float = 300,
     env_extra: Mapping[str, str] | None = None,
     check: bool = False,
@@ -101,6 +102,7 @@ def run_tool(
         proc = subprocess.run(
             argv,
             cwd=str(cwd) if cwd else None,
+            input=input,
             capture_output=True,
             text=True,
             encoding="utf-8",
