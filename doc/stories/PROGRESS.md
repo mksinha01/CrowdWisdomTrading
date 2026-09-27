@@ -23,7 +23,7 @@ passed — not when the code is written.
 | S03 | Artifact schema models | done | `2eb4a82` | `pytest tests/test_models.py -k "not validator"` |
 | S04 | Storyboard validators | done | `be28c2f` | 11 validator tests selected, 11 passed |
 | S05 | Beat taxonomy & aggregation | todo | | `pytest tests/test_beats.py` |
-| S06 | Deterministic claims engine | todo | | 15 rules, clean-script case green |
+| S06 | Deterministic claims engine | done | | 15 rules (12 hard/3 soft), 60 tests green, clean-script 0 hard |
 | S07 | Artifact store & provenance | todo | | `pytest tests/test_artifacts.py` + secret-scan fire |
 
 ## Phase 2 — Clients

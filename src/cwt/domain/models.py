@@ -77,10 +77,7 @@ class AngleName(StrEnum):
     UNIQUE_DATA = "unique_data"
     CROWD_EFFECT = "crowd_effect"
 
-
-class Severity(StrEnum):
-    HARD = "hard"
-    SOFT = "soft"
+from cwt.domain.claims import Severity
 
 
 # Literal sets (carry no weight / structural types)

@@ -19,6 +19,16 @@ from cwt.domain.beats import (
     median_hook_duration,
     underused_high_durability,
 )
+from cwt.domain.claims import (
+    CLAIM_RULES,
+    RULESET_VERSION,
+    ClaimRule,
+    Finding,
+    detect_claims,
+    has_hard_block,
+    rewrite_instructions,
+    scan_prohibited_facts,
+)
 from cwt.domain.models import (
     DEFAULT_PROHIBITED_FACTS,
     SCHEMA_VERSION,
@@ -155,4 +165,13 @@ __all__ = [
     "hook_score_boost",
     "median_hook_duration",
     "underused_high_durability",
+    # Claims deterministic engine
+    "CLAIM_RULES",
+    "RULESET_VERSION",
+    "ClaimRule",
+    "Finding",
+    "detect_claims",
+    "has_hard_block",
+    "rewrite_instructions",
+    "scan_prohibited_facts",
 ]

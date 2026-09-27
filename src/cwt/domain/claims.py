@@ -1,18 +1,29 @@
-"""Deterministic claims engine for financial advertising compliance.
+"""Deterministic financial-advertising claims engine.
 
-Contract specified in doc/video-ads-agent.md §8.6 and doc/stories/S06-deterministic-claims-engine.md.
-Pure regex engine enforcing 15 rules (12 HARD + 3 SOFT) plus prohibited facts scanning.
+PURE. No I/O. No LLM. Exhaustively unit-tested in tests/test_claims.py.
+
+WHY DETERMINISTIC FIRST: an LLM judge that can be argued out of a "guaranteed" is
+not a compliance control. The hard rules below are FINAL — the LLM judge that runs
+afterwards may escalate a severity but may never de-escalate a hard finding.
+
+WHY THE RULESET IS PRODUCT-SPECIFIC: the three rules marked PRODUCT_DISCLAIMER
+encode contradictions with CrowdWisdomTrading's OWN published FAQ. Copy implying
+position access, copy-trading or managed accounts is not merely non-compliant, it
+is false, because the product says so itself.
 """
-
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any
 
-from cwt.domain.models import Severity
-
 RULESET_VERSION = "1.0.0"
+
+
+class Severity(StrEnum):
+    HARD = "hard"      # unconditional block; forces a rewrite; no override
+    SOFT = "soft"      # requires a disclosure or a rewrite; LLM judge adjudicates
 
 
 @dataclass(frozen=True)
@@ -41,7 +52,10 @@ CLAIM_RULES: tuple[ClaimRule, ...] = (
             r"\b(guarantee[ds]?|guaranty)\b.{0,40}\b(return|profit|gain|win|income|money|result)\b",
             re.I,
         ),
-        "Absolute-return promise. Prohibited by Meta and Google financial-services policy and unsubstantiable.",
+        (
+            "Absolute-return promise. Prohibited by Meta and Google financial-services policy "
+            "and unsubstantiable."
+        ),
         "Replace the outcome promise with a described process.",
     ),
     ClaimRule(
@@ -58,31 +72,48 @@ CLAIM_RULES: tuple[ClaimRule, ...] = (
         "specific_profit_figure",
         Severity.HARD,
         re.compile(
-            r"(\$\s?\d[\d,]*\s?(k|m|usd)?\s*(profit|per\s+(day|week|month)|in\s+\d+\s+(days|weeks))|make\s+\$?\d[\d,]*\s*(a|per)\s+(day|week|month))",
+            r"(\$\s?\d[\d,]*\s?(k|m|usd)?\s*(profit|per\s+(day|week|month)|in\s+\d+\s+(days|weeks))"
+            r"|make\s+\$?\d[\d,]*\s*(a|per)\s+(day|week|month))",
             re.I,
         ),
-        "Specific earnings figure. Unsubstantiated earnings claim; a top disapproval trigger on both platforms.",
+        (
+            "Specific earnings figure. Unsubstantiated earnings claim; a top disapproval "
+            "trigger on both platforms."
+        ),
         "Remove the figure entirely. Describe the method instead.",
     ),
     ClaimRule(
         "percentage_return_promise",
         Severity.HARD,
         re.compile(
-            r"\b\d{1,4}(\.\d+)?\s?%\s*(return|gain|profit|roi|per\s+(day|week|month|year)|monthly|weekly|annually)\b",
+            r"\b\d{1,4}(\.\d+)?\s?%\s*(return|gain|profit|roi|per\s+(day|week|month|year)"
+            r"|monthly|weekly|annually)\b",
             re.I,
         ),
         "Promised percentage return.",
-        "Remove. If a historical statistic is essential it must carry its methodology and a safe harbour.",
+        (
+            "Remove. If a historical statistic is essential it must carry its methodology "
+            "and a safe harbour."
+        ),
     ),
     ClaimRule(
         "win_rate_statistic",
         Severity.HARD,
         re.compile(
-            r"\b(\d{1,3}(\.\d+)?\s?%\s*(of\s+)?(our\s+)?(tracked\s+)?(directions?|calls?|signals?|trades?|picks?)\b.{0,20}\b(hit|win|correct|accurate|right|profit)|\b(win|hit|accuracy|success)\s*rate\b.{0,20}\d{1,3}\s?%)",
+            r"\b(\d{1,3}(\.\d+)?\s?%\s*(of\s+)?(our\s+)?(tracked\s+)?"
+            r"(directions?|calls?|signals?|trades?|picks?)\b.{0,20}\b(hit|win|correct|accurate|right|profit)"
+            r"|\b(win|hit|accuracy|success)\s*rate\b.{0,20}\d{1,3}\s?%)",
             re.I,
         ),
-        "Performance statistic. Unverifiable for this product: its public track-record page and /api/predictions both returned HTTP 404 at build time, and the figure appears as three different values (73%, 73.8%, 74.1%) on its own site.",
-        "Remove the statistic. Substitute the process claim: 'every call is published with its outcome'.",
+        (
+            "Performance statistic. Unverifiable for this product: its public "
+            "track-record page and /api/predictions both returned HTTP 404 at build time, "
+            "and the figure appears as three different values (73%, 73.8%, 74.1%) on its own site."
+        ),
+        (
+            "Remove the statistic. Substitute the process claim: "
+            "'every call is published with its outcome'."
+        ),
     ),
     ClaimRule(
         "double_your_money",
@@ -108,10 +139,14 @@ CLAIM_RULES: tuple[ClaimRule, ...] = (
         "financial_freedom",
         Severity.HARD,
         re.compile(
-            r"\b(retire\s+(early|in\s+your)|financial\s+freedom|quit\s+your\s+job|passive\s+income|change\s+your\s+life)\b",
+            r"\b(retire\s+(early|in\s+your)|financial\s+freedom|quit\s+your\s+job|"
+            r"passive\s+income|change\s+your\s+life)\b",
             re.I,
         ),
-        "Lifestyle-outcome promise implying a guaranteed financial result. Explicitly listed as prohibited on Meta.",
+        (
+            "Lifestyle-outcome promise implying a guaranteed financial result. "
+            "Explicitly listed as prohibited on Meta."
+        ),
         "Remove.",
     ),
     ClaimRule(
@@ -129,30 +164,46 @@ CLAIM_RULES: tuple[ClaimRule, ...] = (
         "position_access_implication",
         Severity.HARD,
         re.compile(
-            r"\b(see|track|follow|copy|mirror|know)\b.{0,30}\b(their|the\s+pros'?|smart\s+money'?s?|institutional)\b.{0,20}\b(position|trade|book|order\s+flow|entry)\b",
+            r"\b(see|track|follow|copy|mirror|know)\b.{0,30}\b(their|the\s+pros'?|"
+            r"smart\s+money'?s?|institutional)\b.{0,20}\b(position|trade|book|order\s+flow|entry)\b",
             re.I,
         ),
-        "PRODUCT_DISCLAIMER: implies access to traders' real positions. The product's own FAQ states it does not have access to positions, so this is false as well as non-compliant.",
-        "Reframe as opinion aggregation: 'the calls professional traders are publishing publicly'.",
+        (
+            "PRODUCT_DISCLAIMER: implies access to traders' real positions. The product's "
+            "own FAQ states it does not have access to positions, so this is false as well "
+            "as non-compliant."
+        ),
+        (
+            "Reframe as opinion aggregation: "
+            "'the calls professional traders are publishing publicly'."
+        ),
     ),
     ClaimRule(
         "copy_trading_implication",
         Severity.HARD,
         re.compile(
-            r"\b(copy\s+(our|my|the)\s+trades?|auto[-\s]?trade|autotrade|trade\s+for\s+you|we\s+trade\s+for\s+you|done\s+for\s+you)\b",
+            r"\b(copy\s+(our|my|the)\s+trades?|auto[-\s]?trade|autotrade|trade\s+for\s+you|"
+            r"we\s+trade\s+for\s+you|done\s+for\s+you)\b",
             re.I,
         ),
-        "PRODUCT_DISCLAIMER: implies copy-trading or automated execution. The product explicitly disclaims both.",
+        (
+            "PRODUCT_DISCLAIMER: implies copy-trading or automated execution. "
+            "The product explicitly disclaims both."
+        ),
         "State the opposite explicitly, or remove.",
     ),
     ClaimRule(
         "managed_accounts_implication",
         Severity.HARD,
         re.compile(
-            r"\b(managed\s+account|we\s+manage|manage\s+your\s+(money|funds|portfolio)|someone\s+else\s+trades)\b",
+            r"\b(managed\s+account|we\s+manage|manage\s+your\s+(money|funds|portfolio)|"
+            r"someone\s+else\s+trades)\b",
             re.I,
         ),
-        "PRODUCT_DISCLAIMER: implies managed accounts. The product explicitly disclaims this.",
+        (
+            "PRODUCT_DISCLAIMER: implies managed accounts. "
+            "The product explicitly disclaims this."
+        ),
         "Remove.",
     ),
     # ── SOFT: permitted only with a disclosure or a rewrite ──
@@ -160,7 +211,8 @@ CLAIM_RULES: tuple[ClaimRule, ...] = (
         "implied_certainty",
         Severity.SOFT,
         re.compile(
-            r"\b(never\s+miss|always\s+right|guaranteed\s+win|100\s?%\s+(accurate|correct)|the\s+exact\s+(entry|price|top|bottom))\b",
+            r"\b(never\s+miss|always\s+right|guaranteed\s+win|100\s?%\s+(accurate|correct)|"
+            r"the\s+exact\s+(entry|price|top|bottom))\b",
             re.I,
         ),
         "Implies certainty about an individual signal.",
@@ -170,10 +222,14 @@ CLAIM_RULES: tuple[ClaimRule, ...] = (
         "unsubstantiated_superlative",
         Severity.SOFT,
         re.compile(
-            r"\b(the\s+best|the\s+most\s+accurate|unlike\s+any\s+other|the\s+only\s+platform|world'?s\s+(best|leading))\b",
+            r"\b(the\s+best|the\s+most\s+accurate|unlike\s+any\s+other|the\s+only\s+platform|"
+            r"world'?s\s+(best|leading))\b",
             re.I,
         ),
-        "Unsubstantiated superlative. Meta's unsubstantiated-claims policy targets implied statistical dominance.",
+        (
+            "Unsubstantiated superlative. Meta's unsubstantiated-claims policy "
+            "targets implied statistical dominance."
+        ),
         "Remove the superlative, or make it specific and provable.",
     ),
     ClaimRule(
@@ -204,11 +260,16 @@ def detect_claims(text: str) -> list[Finding]:
 
 
 def has_hard_block(findings: list[Finding]) -> bool:
-    return any(f.severity is Severity.HARD for f in findings)
+    return any(f.severity is Severity.HARD or f.severity == Severity.HARD for f in findings)
 
 
 def rewrite_instructions(findings: list[Finding]) -> list[str]:
-    """De-duplicated `fix` strings, ordered hard-first."""
+    """De-duplicated `fix` strings, ordered hard-first.
+
+    These strings are written FOR A MODEL to consume — the rewrite prompt uses
+    them verbatim. That is why `fix` is a specific instruction rather than
+    'remove this'.
+    """
     seen: set[str] = set()
     out: list[str] = []
     for finding in sorted(findings, key=lambda f: f.severity != Severity.HARD):
@@ -218,28 +279,32 @@ def rewrite_instructions(findings: list[Finding]) -> list[str]:
     return out
 
 
-# Mapping of spelled-out percentage words to digits for paraphrase resistance
-_WORD_TO_NUM: dict[str, str] = {
-    "seventy-four": "74",
-    "seventy four": "74",
-    "seventy-three": "73",
-    "seventy three": "73",
-    "sixteen thousand": "16000",
+_WORD_STEMS: dict[str, str] = {
+    "10": r"(?:10|ten)",
+    "20": r"(?:20|twenty)",
+    "30": r"(?:30|thirty)",
+    "40": r"(?:40|forty)",
+    "50": r"(?:50|fifty)",
+    "60": r"(?:60|sixty)",
+    "70": r"(?:70|seventy)",
+    "73": r"(?:73|seventy[-\s]three)",
+    "74": r"(?:74|seventy[-\s]four)",
+    "80": r"(?:80|eighty)",
+    "90": r"(?:90|ninety)",
+    "100": r"(?:100|one[-\s]hundred|hundred)",
+    "16000": r"(?:16,?000|sixteen[-\s]thousand)",
+    "16564": r"(?:16,564|16564)",
 }
 
 
-def scan_prohibited_facts(text: str, prohibited: list[dict[str, Any]]) -> list[Finding]:
-    """Check script against the research brief's `prohibited_facts` list.
+def scan_prohibited_facts(text: str, prohibited: list[dict[str, Any]] | list[Any]) -> list[Finding]:
+    """Check the script against the research brief's `prohibited_facts` list.
 
     Matches the fact string AND its numeric variants, so '74.1%' is caught by a
     rule written for '74.1% of tracked directions hit', and 'about 74 percent' is
     caught too. Paraphrase resistance is the whole point of this function.
     """
     findings: list[Finding] = []
-    normalized_text = text.lower()
-    for word, num in _WORD_TO_NUM.items():
-        normalized_text = normalized_text.replace(word, num)
-
     for entry in prohibited:
         if isinstance(entry, dict):
             fact = entry.get("fact", "")
@@ -260,51 +325,58 @@ def scan_prohibited_facts(text: str, prohibited: list[dict[str, Any]]) -> list[F
                     rule_id="prohibited_fact",
                     severity=Severity.HARD,
                     matched_text=fact,
-                    why=f"Prohibited fact ({fact!r}). {reason}",
+                    why=reason,
                     fix=rule,
                 )
             )
             continue
 
-        # Clean fact string for number extraction
+        # Numeric variants: extract every number in the fact and look for it nearby
+        # a relevant noun. Catches "74.1%", "74%", "about seventy-four percent".
         clean_fact = fact.replace(",", "")
-        numbers = re.findall(r"\d+(?:\.\d+)?", clean_fact)
+        numbers = list(re.findall(r"\d+(?:\.\d+)?", clean_fact))
+        # Also include percentage numbers mentioned in reason (e.g. 73% in reason)
+        for r_pct in re.findall(r"(\d+(?:\.\d+)?)\s*(?:%|percent)", reason, re.I):
+            if r_pct not in numbers:
+                numbers.append(r_pct)
 
+        seen_stems: set[str] = set()
         for number in numbers:
             stem = number.split(".")[0]
-            # Match percent variants: e.g. 74.1%, 74%, 74 percent
-            variant = re.compile(rf"\b{re.escape(stem)}(?:\.\d+)?\s?(?:%|percent\b)", re.I)
-            match = variant.search(normalized_text)
-            if match:
+            if stem in seen_stems:
+                continue
+            seen_stems.add(stem)
+
+            stem_pat = _WORD_STEMS.get(stem, re.escape(stem))
+            # Match percentage variants: e.g. 74.1%, 74%, about 74 percent
+            variant = re.compile(rf"\b{stem_pat}(?:\.\d+)?\s?(?:%|percent\b)", re.I)
+            for match in variant.finditer(text):
                 findings.append(
                     Finding(
                         rule_id="prohibited_fact_numeric_variant",
                         severity=Severity.HARD,
-                        matched_text=match.group(0),
+                        matched_text=match.group(0).strip(),
                         why=f"Numerically derives from a prohibited fact ({fact!r}). {reason}",
                         fix=rule,
                     )
                 )
-                break
 
-            # If stem is a large number (e.g. 16564 or 16000), look for it with or without comma
+            # Match large counts (e.g. 16,564 traders)
             if len(stem) >= 4:
-                # Match 16,564 or 16564
                 if len(stem) == 5:
-                    large_num_pat = re.compile(rf"\b{stem[0:2]}[,\s]?{stem[2:]}\b", re.I)
+                    large_num_pat = re.compile(
+                        rf"\b(?:{stem[0:2]}[,\s]?{stem[2:]}|{stem_pat})\b", re.I
+                    )
                 else:
-                    large_num_pat = re.compile(rf"\b{re.escape(stem)}\b", re.I)
-                num_match = large_num_pat.search(text)
-                if num_match:
+                    large_num_pat = re.compile(rf"\b{stem_pat}\b", re.I)
+                for match in large_num_pat.finditer(text):
                     findings.append(
                         Finding(
                             rule_id="prohibited_fact_numeric_variant",
                             severity=Severity.HARD,
-                            matched_text=num_match.group(0),
+                            matched_text=match.group(0).strip(),
                             why=f"Numerically derives from a prohibited fact ({fact!r}). {reason}",
                             fix=rule,
                         )
                     )
-                    break
-
     return findings
