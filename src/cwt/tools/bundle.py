@@ -72,6 +72,10 @@ _BUNDLE_FILES = (
 def verify_artifact(*, settings: Settings, paths: RunPaths, name: str) -> dict:
     """Schema-validate one artifact. Returns {"ok": true} on success (spec line 4080).
 
+    CALL THIS: to self-check an artifact before moving to the next pipeline stage.
+
+    WHEN NOT TO CALL: do not call on arbitrary or temporary scratch files not in ARTIFACT_NAMES. Do not call before the target artifact file has been written to disk.
+
     WRITES nothing.
     RETURNS {"ok":bool,"name":str,"schema_version":int|None,"path":str,"error":str|None}
 

@@ -368,6 +368,10 @@ def generate_hook_candidates(
 ) -> dict[str, Any]:
     """12 scored candidates across 6 archetypes, with per-candidate rejection reasons.
 
+    CALL THIS: once during the storyboard stage, after research_brief.json and ad_patterns.json are assembled.
+
+    WHEN NOT TO CALL: do not call before the research brief is ready. Do not call after variants are already being written; hook selection is fixed before writing variants.
+
     WRITES artifacts/hook_candidates.json
     RETURNS {"artifact_path","candidates":int,"selected_id","archetypes_covered":[...],
              "underused_boosted":[...]}
@@ -813,6 +817,10 @@ def judge_variants(
 ) -> dict[str, Any]:
     """Score three variants, pick a winner, emit the splice list.
 
+    CALL THIS: once all three variants (pain, unique_data, crowd_effect) have been generated.
+
+    WHEN NOT TO CALL: do not call before all three variant JSON files exist in artifacts/variants/. Do not call after a winner is already selected and rewrite is in progress.
+
     WRITES artifacts/review_verdict.json? — NO. Writes nothing; returns the judgement.
     RETURNS {"variants":[...],"winner":str,"splices":[...],"winner_path":str}
     """
@@ -1236,6 +1244,10 @@ def apply_rewrite(
 ) -> dict[str, Any]:
     """Apply a review verdict's instructions OR a splice list. Preserves must_not_change.
 
+    CALL THIS: to apply review verdict feedback or splice directives to storyboard.json.
+
+    WHEN NOT TO CALL: do not call if storyboard already passed review or if revision_rounds has exceeded the maximum allowed rewrite limit. Do not call before a storyboard variant winner is selected.
+
     REWRITES artifacts/storyboard.json in place; increments generation.revision_rounds
     RETURNS {"artifact_path","revision_rounds","applied":[...],"preserved":[...],"valid":true}
     """
@@ -1490,6 +1502,10 @@ def render_storyboard_html(
     json human readable format' — the JSON is the machine artifact, this is what a
     human reads.
 
+    CALL THIS: to generate a human-readable HTML preview of storyboard.json.
+
+    WHEN NOT TO CALL: do not call before storyboard.json has been written and validated. Do not call as a substitute for machine verification of the JSON schema.
+
     WRITES artifacts/storyboard.html
     RETURNS {"artifact_path","shots_rendered","bytes"}
     """
@@ -1587,6 +1603,10 @@ def make_contact_sheet(
     rows: int = 3,
 ) -> dict[str, Any]:
     """4x3 grid of each shot's first frame. Pillow. No ffmpeg required.
+
+    CALL THIS: to generate a visual thumbnail grid of shot keyframes.
+
+    WHEN NOT TO CALL: do not call before keyframe images exist or before storyboard.json is finalized. Do not call if image assets are missing.
 
     WRITES artifacts/contact_sheet.png
     RETURNS {"artifact_path","cols","rows","cells"}

@@ -7,7 +7,6 @@ import json
 import logging
 
 from . import schemas
-from . import handlers as h
 
 logger = logging.getLogger("cwt.plugin")
 
@@ -25,6 +24,10 @@ def _on_task_completed(task_id, summary=None, metadata=None, **kwargs):
 def register(ctx):
     """Called exactly once at startup. If this raises, the plugin is disabled
     but Hermes continues running — which is the behaviour we want."""
+    # Import handlers lazily so schemas.py is importable for tests even when
+    # handlers.py does not exist yet (S30 delivers handlers.py).
+    from . import handlers as h  # noqa: PLC0415
+
     logger.info("registering CWT plugin (profile=%s)", ctx.profile_name)
 
     _TOOLS = (

@@ -85,12 +85,6 @@ def test_all_schemas_tuple_length(all_schemas):
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("schema", [
-    pytest.param(None, id="placeholder")  # filled below
-])
-def test_schema_structure_placeholder():
-    pass  # real tests follow
-
 
 def test_every_schema_has_cwt_prefix(all_schemas):
     """Every schema's function.name starts with 'cwt_'."""
