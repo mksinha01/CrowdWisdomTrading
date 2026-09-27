@@ -454,6 +454,9 @@ async def _run_actor_single(
     for item in items:
         if isinstance(item, dict):
             item["_cwt_charge_usd"] = charge / max(len(items), 1)
+            item["_cwt_total_charge_usd"] = charge
+            item["_cwt_run_id"] = run_id
+            item["_cwt_dataset_id"] = dataset_id
 
     return items
 
