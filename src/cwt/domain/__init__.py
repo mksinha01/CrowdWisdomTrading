@@ -1,5 +1,13 @@
 """Domain models and core business rules."""
 
+from cwt.domain.artifacts import (
+    ARTIFACT_MODELS,
+    ARTIFACT_NAMES,
+    ArtifactError,
+    ArtifactStore,
+    Provenance,
+    sha256_file,
+)
 from cwt.domain.beats import (
     ASPECT_RATIOS,
     BEAT_DEFAULT_PROPORTIONS,
@@ -98,7 +106,11 @@ __all__ = [
     "AdRanking",
     "AdSource",
     "AngleName",
+    "ARTIFACT_MODELS",
+    "ARTIFACT_NAMES",
     "ArtifactBase",
+    "ArtifactError",
+    "ArtifactStore",
     "ArtifactVersionError",
     "AssetRef",
     "BeatEntry",
@@ -129,6 +141,7 @@ __all__ = [
     "PricingTier",
     "ProductFacts",
     "ProhibitedFact",
+    "Provenance",
     "RenderManifest",
     "ResearchAngle",
     "ResearchBrief",
@@ -136,6 +149,7 @@ __all__ = [
     "ReviewVerdict",
     "Severity",
     "SfxCue",
+    "sha256_file",
     "Shot",
     "Stabilisation",
     "Storyboard",
