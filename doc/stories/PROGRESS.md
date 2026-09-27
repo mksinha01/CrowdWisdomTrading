@@ -20,8 +20,8 @@ passed — not when the code is written.
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S03 | Artifact schema models | todo | | `pytest tests/test_models.py -k "not validator"` |
-| S04 | Storyboard validators | todo | | 11 validator tests selected, 11 passed |
+| S03 | Artifact schema models | done | `2eb4a82` | `pytest tests/test_models.py -k "not validator"` |
+| S04 | Storyboard validators | done | `be28c2f` | 11 validator tests selected, 11 passed |
 | S05 | Beat taxonomy & aggregation | todo | | `pytest tests/test_beats.py` |
 | S06 | Deterministic claims engine | todo | | 15 rules, clean-script case green |
 | S07 | Artifact store & provenance | todo | | `pytest tests/test_artifacts.py` + secret-scan fire |
