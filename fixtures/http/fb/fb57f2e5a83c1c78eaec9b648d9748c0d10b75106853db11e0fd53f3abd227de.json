@@ -1,0 +1,92 @@
+{
+  "status_code": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": [
+    {
+      "adArchiveID": "1234567890123",
+      "collationId": "9876543210987",
+      "pageName": "Example Signals Co",
+      "pageID": "15087023444",
+      "isActive": true,
+      "startDateFormatted": "2026-09-04",
+      "endDateFormatted": null,
+      "publisherPlatform": ["FACEBOOK", "INSTAGRAM"],
+      "snapshot": {
+        "body": {
+          "text": "Most traders follow one voice. Here is what 16,000 sound like."
+        },
+        "title": "Collective Intelligence",
+        "linkDescription": "See the consensus.",
+        "ctaType": "LEARN_MORE",
+        "ctaText": "Learn more",
+        "displayFormat": "VIDEO",
+        "linkUrl": "https://example.com/",
+        "images": [],
+        "videos": [
+          {
+            "videoHdUrl": "https://video.example.com/hd.mp4",
+            "videoDuration": 34.2
+          }
+        ]
+      }
+    },
+    {
+      "adArchiveId": "2345678901234",
+      "collationCount": "12345",
+      "pageName": "Forex Consensus Pro",
+      "pageId": "22334455",
+      "isActive": true,
+      "startDateFormatted": "Sep 4, 2026",
+      "endDateFormatted": null,
+      "publisherPlatform": ["FACEBOOK"],
+      "snapshot": {
+        "body": {
+          "text": "Stop guessing market turns alone."
+        },
+        "title": "Market Consensus",
+        "linkDescription": "Signals validated by real traders",
+        "ctaType": "SIGN_UP",
+        "ctaText": "Sign Up",
+        "displayFormat": "VIDEO",
+        "linkUrl": "https://example.com/signup",
+        "images": [],
+        "videos": [
+          {
+            "videoSdUrl": "https://video.example.com/sd.mp4"
+          }
+        ]
+      }
+    },
+    {
+      "adArchiveID": "3456789012345",
+      "pageName": "Trading Insights Daily",
+      "pageID": "33445566",
+      "isActive": false,
+      "startDateFormatted": "2026-08-28",
+      "endDateFormatted": "2026-09-20",
+      "publisherPlatform": "FACEBOOK",
+      "snapshot": {
+        "body": {
+          "text": "Historical accuracy across 4 asset classes."
+        },
+        "title": "Daily Insights",
+        "displayFormat": "IMAGE",
+        "linkUrl": "https://example.com/daily",
+        "images": [
+          {
+            "originalImageUrl": "https://img.example.com/chart.png"
+          }
+        ],
+        "videos": []
+      }
+    },
+    {
+      "adArchiveId": "4567890123456",
+      "pageName": "Bare Minimum Ads",
+      "isActive": true,
+      "startDateFormatted": "2026-09-10"
+    }
+  ]
+}

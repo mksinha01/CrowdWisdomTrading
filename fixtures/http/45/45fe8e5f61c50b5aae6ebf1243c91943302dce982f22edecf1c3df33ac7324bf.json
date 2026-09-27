@@ -1,0 +1,13 @@
+{
+  "status_code": 201,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "data": {
+      "id": "run_apify_fixture_01",
+      "defaultDatasetId": "ds_apify_fixture_01",
+      "status": "READY"
+    }
+  }
+}
