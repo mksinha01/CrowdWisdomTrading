@@ -1,0 +1,48 @@
+# hermes/config.yaml — template written into ~/.hermes/config.yaml by `cwt bootstrap`
+
+model:
+  # The WORKER model. Every dispatched kanban card runs on this.
+  # MUST have >= 64k context — Hermes enforces this.
+  # Set it with `hermes model` rather than editing here; that command writes the
+  # correct provider block. This value is a placeholder.
+  default: "google/gemini-2.5-flash"
+
+kanban:
+  dispatch_in_gateway: true          # the dispatcher runs inside the gateway process
+  dispatch_interval_seconds: 60      # one tick per minute
+  review_dispatch: true              # required — our creative + compliance gates depend on it
+  auto_promote_children: true        # a child card auto-promotes to `ready` when parents are done
+  auto_decompose: false              # our DAG is explicit; we do NOT want the board inventing cards
+  max_in_progress: 4                 # matches LLM_MAX_CONCURRENCY — see Rule A4
+  failure_limit: 2
+  stranded_threshold_seconds: 1800
+
+delegation:
+  max_concurrent_children: 3         # the three storyboard variants, in parallel
+  max_iterations: 120                # per child; the default 250 is generous, we do not need it
+  model: "google/gemini-2.5-flash"   # children run cheap — see Rule A5
+  provider: "openrouter"
+
+agent:
+  max_turns: 60                      # a worker card should never need more
+  auto_recovery_cycles: 3
+
+compression:
+  enabled: true
+  threshold: 0.60
+
+dashboard:
+  kanban:
+    render_markdown: true
+    include_archived_by_default: false
+
+skills:
+  auto_load:
+    - cwt-source-winning-ads
+    - cwt-extract-ad-patterns
+    - cwt-research-angle
+    - cwt-write-storyboard
+    - cwt-creative-review
+    - cwt-claims-gate
+    - cwt-render-video
+    - cwt-final-qa
