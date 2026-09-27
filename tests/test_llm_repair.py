@@ -465,7 +465,8 @@ async def test_semaphore_bounds_concurrency(tmp_path: Path):
 async def test_consecutive_429_demotes_to_fallback(tmp_path: Path, monkeypatch):
     """3 consecutive 429s demote to fallbacks[0] and the next call uses it."""
     # Speed up retry sleep for test
-    monkeypatch.setattr("cwt.util.retry.asyncio.sleep", lambda s: asyncio.sleep(0))
+    real_sleep = asyncio.sleep
+    monkeypatch.setattr("cwt.util.retry.asyncio.sleep", lambda s: real_sleep(0))
 
     ledger = tmp_path / "ledger.jsonl"
     client = LLMClient(
