@@ -48,18 +48,18 @@ passed — not when the code is written.
 |---|---|---|---|---|
 | S14 | ffmpeg, backend chain, filtergraph | done | | `pytest tests/test_filtergraph.py` + Rule V4 |
 | S15 | Local ffmpeg A — shot render | done | | one shot renders; no absolute path in argv; 17 tests green |
-| S16 | Local ffmpeg B — mix, probe, manifest | todo | | `pytest tests/test_local_ffmpeg.py` + xfade math |
-| S17 | Asset sourcer & fixture assets | todo | | `pytest tests/test_assets.py` + determinism |
-| S18 | Optional backends | todo | | `available()` never raises; no `9119`/`8000` |
+| S16 | Local ffmpeg B — mix, probe, manifest | done | `786fc40` | `pytest tests/test_local_ffmpeg.py` + xfade math |
+| S17 | Asset sourcer & fixture assets | done | `8f91dd2` | `pytest tests/test_assets.py` + determinism |
+| S18 | Optional backends | done | `cb19121` | `available()` never raises; no `9119`/`8000` |
 
 ## Phase 5 — Tool surface
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S19 | Tools — ads | todo | | `pytest tests/test_tools_ads.py` + no token in artifact |
-| S20 | Tools — patterns | todo | | median timeline contiguous; distribution sums to 1 |
-| S21 | Tools — research | todo | | baseline `prohibited_facts` never shrinks |
-| S22 | Tools — storyboard A | todo | | splices recorded; no caption-only shots |
+| S19 | Tools — ads | done | `db83c8a` | `pytest tests/test_tools_ads.py` + no token in artifact |
+| S20 | Tools — patterns | done | | median timeline contiguous; distribution sums to 1 |
+| S21 | Tools — research | done | | baseline `prohibited_facts` never shrinks |
+| S22 | Tools — storyboard A | done | | splices recorded; no caption-only shots; 11 tests green |
 | S23 | Tools — storyboard B | todo | | `must_not_change` enforcement fires |
 | S24 | Tools — claims | todo | | Rule C1 no-de-escalation; both stages recorded |
 | S25 | Tools — video | todo | | manifest parses; `qa_check` fails a 28s render |

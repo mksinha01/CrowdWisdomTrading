@@ -277,6 +277,9 @@ class LLMClient:
         schema: type[T],
         stage: str,
         max_repairs: int | None = None,
+        temperature: float = 0.0,
+        max_tokens: int = 4096,
+        validation_context: dict[str, Any] | None = None,
     ) -> T:
         """Layer 3 plus the repair loop. This is the function stages actually call."""
         max_repairs = self.repair_attempts if max_repairs is None else max_repairs
@@ -288,11 +291,16 @@ class LLMClient:
                 tier=tier,
                 messages=convo,
                 schema=schema,
+                temperature=temperature,
+                max_tokens=max_tokens,
                 stage=stage,
                 repair_attempts=attempt,
             )
             try:
-                return schema.model_validate(extract_json(result.text))
+                data = extract_json(result.text)
+                if isinstance(data, dict) and validation_context is not None:
+                    data.setdefault("validation_context", validation_context)
+                return schema.model_validate(data)
             except (UnparseableJson, ValidationError) as exc:
                 last_error = exc
                 if attempt == max_repairs:

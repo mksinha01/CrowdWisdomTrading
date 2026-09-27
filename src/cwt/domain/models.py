@@ -97,6 +97,12 @@ class _CwtBaseModel(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    def __getitem__(self, item: str) -> Any:
+        try:
+            return getattr(self, item)
+        except AttributeError as exc:
+            raise KeyError(item) from exc
+
 
 class ArtifactBase(_CwtBaseModel):
     """Base class for top-level JSON artifacts with version gating."""
