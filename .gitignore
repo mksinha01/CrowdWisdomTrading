@@ -31,3 +31,6 @@ fixtures/http/**/*.raw.json
 
 # S26: submission bundle contains live API tokens in README-SUBMISSION.md — MUST NOT be committed (Rule R1)
 submission/
+
+# S28: cross-run diagnostics written by _dump_diagnostics — outlive any single run by design
+runs/_diagnostics/

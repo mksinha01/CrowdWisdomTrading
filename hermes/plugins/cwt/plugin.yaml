@@ -1,0 +1,50 @@
+name: cwt
+version: 1.0.0
+description: CrowdWisdomTrading video-ad-generation tools
+author: CWT Video Ads Agent
+license: MIT
+homepage: https://github.com/<you>/cwt-video-ads-agent
+
+provides_tools:
+  - cwt_source_winning_ads
+  - cwt_rank_winning_ads
+  - cwt_extract_ad_patterns
+  - cwt_research_angle
+  - cwt_assemble_brief
+  - cwt_generate_hook_candidates
+  - cwt_write_storyboard_variant
+  - cwt_judge_variants
+  - cwt_score_storyboard
+  - cwt_apply_rewrite
+  - cwt_check_claims
+  - cwt_rewrite_for_compliance
+  - cwt_synthesize_voiceover
+  - cwt_render_video
+  - cwt_probe_media
+  - cwt_render_storyboard_html
+  - cwt_make_contact_sheet
+  - cwt_verify_artifact
+  - cwt_assemble_submission
+
+provides_hooks:
+  - post_tool_call
+  - kanban_task_completed
+
+# Missing vars DISABLE the plugin with a clear message rather than failing at call time.
+requires_env:
+  - name: APIFY_TOKEN
+    description: Apify API token for Meta Ads Library scraping
+    url: https://console.apify.com/account/integrations
+    secret: true
+  - name: TAVILY_API_KEY
+    description: Tavily search API key
+    url: https://app.tavily.com/home
+    secret: true
+  - name: EXA_API_KEY
+    description: Exa neural search API key
+    url: https://dashboard.exa.ai/api-keys
+    secret: true
+  - name: OPENROUTER_API_KEY
+    description: OpenRouter API key (or set NVIDIA_API_KEY and LLM_PROVIDER=nvidia)
+    url: https://openrouter.ai/keys
+    secret: true
