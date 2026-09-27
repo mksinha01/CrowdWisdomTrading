@@ -22,16 +22,16 @@ passed — not when the code is written.
 |---|---|---|---|---|
 | S03 | Artifact schema models | done | `2eb4a82` | `pytest tests/test_models.py -k "not validator"` |
 | S04 | Storyboard validators | done | `be28c2f` | 11 validator tests selected, 11 passed |
-| S05 | Beat taxonomy & aggregation | todo | | `pytest tests/test_beats.py` |
-| S06 | Deterministic claims engine | done | | 15 rules (12 hard/3 soft), 60 tests green, clean-script 0 hard |
-| S07 | Artifact store & provenance | todo | | `pytest tests/test_artifacts.py` + secret-scan fire |
+| S05 | Beat taxonomy & aggregation | done | `1a787e4` | `pytest tests/test_beats.py` |
+| S06 | Deterministic claims engine | done | `443d307` | 15 rules (12 hard/3 soft), 60 tests green, clean-script 0 hard |
+| S07 | Artifact store & provenance | done | `4e3033e` | `pytest tests/test_artifacts.py` + secret-scan fire |
 
 ## Phase 2 — Clients
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S08 | HTTP fixture cache / `--offline` | todo | | `pytest tests/test_http_cache.py` + B5 guard |
-| S09 | LLM client | todo | | `pytest tests/test_llm_repair.py`, zero network |
+| S08 | HTTP fixture cache / `--offline` | done | `4e3033e` | `pytest tests/test_http_cache.py` + B5 guard |
+| S09 | LLM client | done | `38932dc` | `pytest tests/test_llm_repair.py`, zero network |
 | S10 | Apify client | todo | | `pytest tests/test_apify.py` + Rule H2 assertion |
 | S11 | Tavily + Exa clients | todo | | `pytest tests/test_search.py` + legacy-enum grep |
 | S12 | TTS client & transcript | todo | | `pytest tests/test_tts.py` + timing contiguity |
@@ -131,5 +131,5 @@ Cross-reference `00-INDEX.md` §5. Update a row when a defect is resolved or a n
 | G13 | `safe_format` circular-import/NameError bug | S13 | ☐ |
 | B3 | `engine_defaults_to_hermes` used, never defined | S01 | ☑ |
 | B4 | `scan_prohibited_facts` never wired by any tool | S24 | ☐ |
-| B5 | `request_cache_key` hashes a token-bearing URL | S08 | ☐ |
+| B5 | `request_cache_key` hashes a token-bearing URL | S08 | ☑ |
 | — | "11 cards" prose vs 12-card `DAG_SPEC` vs 11 stages | S27/S32 | ☐ |
