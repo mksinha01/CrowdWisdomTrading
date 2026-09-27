@@ -295,3 +295,246 @@ def test_camera_intensity_bounds() -> None:
             depth_of_field="deep",
             stabilisation="locked",
         )
+
+
+# ===========================================================================
+# S04: Storyboard Validators (doc/stories/S04-storyboard-validators.md)
+# ===========================================================================
+
+
+def test_validator_01_beats_covers_timeline() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # Gap between beats: beat 1 starts at 4.0s (beat 0 ends at 3.4s -> 0.60s gap)
+    d = json.loads(json.dumps(data))
+    d["beats"][1]["start_s"] = 4.0
+    with pytest.raises(ValidationError, match=r"Gap of 0\.60s between beat 'hook'.*and 'problem'"):
+        Storyboard.model_validate(d)
+
+    # Overlap between beats: beat 1 starts at 3.0s (beat 0 ends at 3.4s -> 0.40s overlap)
+    d = json.loads(json.dumps(data))
+    d["beats"][1]["start_s"] = 3.0
+    with pytest.raises(ValidationError, match=r"Overlap of 0\.40s between beat 'hook'.*and 'problem'"):
+        Storyboard.model_validate(d)
+
+    # Beat 0 does not start at 0.0s
+    d = json.loads(json.dumps(data))
+    d["beats"][0]["start_s"] = 0.5
+    with pytest.raises(ValidationError, match="gap: 0.50s"):
+        Storyboard.model_validate(d)
+
+    # Last beat does not reach total_duration_s
+    d = json.loads(json.dumps(data))
+    d["beats"][-1]["end_s"] = 40.0
+    with pytest.raises(ValidationError, match="Gap of 2.00s"):
+        Storyboard.model_validate(d)
+
+
+def test_validator_02_shots_match_beats() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # Shot s01 exceeds hook beat end (ends at 4.0s, hook ends at 3.4s)
+    d = json.loads(json.dumps(data))
+    d["shots"][0]["duration_s"] = 4.0
+    with pytest.raises(ValidationError, match=r"Shot 's01' range \[0\.00s, 4\.00s\) falls outside declared beat 'hook'"):
+        Storyboard.model_validate(d)
+
+    # Shot s01 starts before hook beat start
+    d = json.loads(json.dumps(data))
+    d["shots"][0]["start_s"] = -0.5
+    with pytest.raises(ValidationError, match=r"Shot 's01'.*falls outside declared beat 'hook'"):
+        Storyboard.model_validate(d)
+
+
+def test_validator_03_duration_in_bounds() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # Below minimum (e.g. 20s < 30s)
+    d = json.loads(json.dumps(data))
+    d["meta"]["total_duration_s"] = 20.0
+    # Scale beats and shots to 20.0 so validator 1 & 4 pass
+    d["beats"] = [
+        {"beat": "hook", "start_s": 0.0, "end_s": 2.5, "tolerance_s": 1.2, "on_target": True},
+        {"beat": "cta", "start_s": 2.5, "end_s": 20.0, "tolerance_s": 3.0, "on_target": True},
+    ]
+    d["shots"] = [
+        {**d["shots"][0], "id": "s01", "beat": "hook", "start_s": 0.0, "duration_s": 2.5},
+        {**d["shots"][-1], "id": "s12", "beat": "cta", "start_s": 2.5, "duration_s": 17.5},
+    ]
+    d["voiceover"]["segments"] = [
+        {"shot_id": "s01", "text": "Too many voices.", "start_s": 0.0, "end_s": 2.0},
+        {"shot_id": "s12", "text": "Collective intelligence.", "start_s": 3.0, "end_s": 15.0},
+    ]
+    with pytest.raises(ValidationError, match=r"total_duration_s 20\.00s outside bounds \[30\.00s, 60\.00s\]"):
+        Storyboard.model_validate(d)
+
+    # Above maximum (e.g. 70s > 60s)
+    d = json.loads(json.dumps(data))
+    d["meta"]["total_duration_s"] = 70.0
+    d["beats"][-1]["end_s"] = 70.0
+    d["shots"][-1]["duration_s"] = 6.1 + (70.0 - 42.0)
+    with pytest.raises(ValidationError, match=r"total_duration_s 70\.00s outside bounds \[30\.00s, 60\.00s\]"):
+        Storyboard.model_validate(d)
+
+
+def test_validator_04_shot_durations_sum() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # Shorten s03 by 0.2s: s03 is [3.4, 8.6) which still fits in problem beat [3.4, 8.8),
+    # but total shot durations sum to 41.80s != 42.00s (delta 0.20s > 0.05s)
+    d = json.loads(json.dumps(data))
+    d["shots"][2]["duration_s"] = 5.2
+    with pytest.raises(
+        ValidationError,
+        match=r"Shot durations sum 41\.80s does not match total_duration_s 42\.00s \(delta: 0\.20s, tolerance: 0\.05s\)",
+    ):
+        Storyboard.model_validate(d)
+
+
+def test_validator_05_hook_within_three_seconds() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # Hook ends at 4.5s with tolerance 1.2 (3.0 + 1.2 = 4.2 < 4.5s)
+    d = json.loads(json.dumps(data))
+    d["beats"][0]["end_s"] = 4.5
+    d["beats"][1]["start_s"] = 4.5
+    d["shots"][0]["duration_s"] = 4.5
+    d["shots"][1]["start_s"] = 4.5
+    d["shots"][2]["start_s"] = 4.5
+    d["shots"][2]["duration_s"] = 4.3  # ends at 8.8
+    with pytest.raises(
+        ValidationError,
+        match=r"Hook beat ends at 4\.50s, exceeding maximum allowed 3\.0s \+ tolerance 1\.20s \(4\.20s\)",
+    ):
+        Storyboard.model_validate(d)
+
+
+def test_validator_06_beats_within_median_tolerance() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # Validating without validation_context skips the check and records a warning
+    sb = Storyboard.model_validate(data)
+    assert any("Validator beats_within_median_tolerance skipped" in w for w in sb.warnings)
+
+    # Validating with validation_context where problem beat deviates by 4.60s (> 1.00s tolerance)
+    d = json.loads(json.dumps(data))
+    d["validation_context"] = {
+        "median_beat_timeline": [
+            {"beat": "hook", "start_s": 0.0, "tolerance_s": 1.2},
+            {"beat": "problem", "start_s": 8.0, "tolerance_s": 1.0},
+        ]
+    }
+    with pytest.raises(
+        ValidationError,
+        match=r"Beat 'problem' start 3\.40s deviates from mined median 8\.00s by 4\.60s, exceeding tolerance 1\.00s",
+    ):
+        Storyboard.model_validate(d)
+
+
+def test_validator_07_palette_is_dark_and_accented() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # All greys: lacks both near-black (< 0x30) and accent (> 0x80)
+    d = json.loads(json.dumps(data))
+    d["shots"][0]["palette"] = ["#404040", "#505050", "#606060", "#707070"]
+    with pytest.raises(ValidationError, match="Shot 's01' palette lacks near-black and accent color"):
+        Storyboard.model_validate(d)
+
+    # Dark only: lacks accent
+    d = json.loads(json.dumps(data))
+    d["shots"][0]["palette"] = ["#050505", "#101010", "#181818", "#202020"]
+    with pytest.raises(ValidationError, match="Shot 's01' palette lacks accent color"):
+        Storyboard.model_validate(d)
+
+    # Bright only: lacks near-black
+    d = json.loads(json.dumps(data))
+    d["shots"][0]["palette"] = ["#ffffff", "#ef4444", "#22d3ee", "#38bdf8"]
+    with pytest.raises(ValidationError, match="Shot 's01' palette lacks near-black color"):
+        Storyboard.model_validate(d)
+
+
+def test_validator_08_text_within_safe_area() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # On-screen text at position 'top' (y=0.08) sits outside top margin (0.15)
+    d = json.loads(json.dumps(data))
+    d["shots"][1]["on_screen_text"][0]["position"] = "top"
+    with pytest.raises(
+        ValidationError,
+        match=r"Shot 's02' on-screen text 'TOO MANY VOICES\.' at position 'top'.*sits outside declared safe area",
+    ):
+        Storyboard.model_validate(d)
+
+    # On-screen text at position 'bottom' (y=0.90) sits outside bottom margin (1 - 0.25 = 0.75)
+    d = json.loads(json.dumps(data))
+    d["shots"][1]["on_screen_text"][0]["position"] = "bottom"
+    with pytest.raises(
+        ValidationError,
+        match=r"Shot 's02' on-screen text 'TOO MANY VOICES\.' at position 'bottom'.*sits outside declared safe area",
+    ):
+        Storyboard.model_validate(d)
+
+
+def test_validator_09_risk_disclosure_present() -> None:
+    data = _load_fixture("storyboard.json")
+    d = json.loads(json.dumps(data))
+    d["compliance"]["risk_disclosure_present"] = False
+    with pytest.raises(
+        ValidationError,
+        match="Rule C1 violation: compliance.risk_disclosure_present must be True",
+    ):
+        Storyboard.model_validate(d)
+
+
+def test_validator_10_no_prohibited_facts() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # Full text contains prohibited numeric variant '74.1%'
+    d = json.loads(json.dumps(data))
+    d["voiceover"]["full_text"] = "We achieve 74.1% on all calls. " + d["voiceover"]["full_text"]
+    with pytest.raises(
+        ValidationError,
+        match=r"Prohibited fact.*74\.1%.*matched in voiceover full_text",
+    ):
+        Storyboard.model_validate(d)
+
+    # VO segment contains '74%'
+    d = json.loads(json.dumps(data))
+    d["voiceover"]["segments"][0]["text"] = "74% win rate guaranteed."
+    with pytest.raises(
+        ValidationError,
+        match=r"Prohibited fact.*matched in voiceover segment for shot 's01'",
+    ):
+        Storyboard.model_validate(d)
+
+    # Shot on-screen text contains '16,564'
+    d = json.loads(json.dumps(data))
+    d["shots"][1]["on_screen_text"][0]["text"] = "16,564 TRADERS."
+    with pytest.raises(
+        ValidationError,
+        match=r"Prohibited fact.*16,564.*matched in shot 's02' on-screen text",
+    ):
+        Storyboard.model_validate(d)
+
+
+def test_validator_11_voiceover_matches_shots() -> None:
+    data = _load_fixture("storyboard.json")
+
+    # VO segment references nonexistent shot id
+    d = json.loads(json.dumps(data))
+    d["voiceover"]["segments"][0]["shot_id"] = "s99"
+    with pytest.raises(
+        ValidationError,
+        match="Voiceover segment references nonexistent shot_id 's99'",
+    ):
+        Storyboard.model_validate(d)
+
+    # VO duration exceeds video duration (overrun)
+    d = json.loads(json.dumps(data))
+    d["voiceover"]["segments"][-1]["end_s"] = 50.0  # causes overrun > 42.05s
+    with pytest.raises(
+        ValidationError,
+        match=r"Summed voiceover segment duration.*exceeds video duration 42\.00s by.*overrun",
+    ):
+        Storyboard.model_validate(d)
+
