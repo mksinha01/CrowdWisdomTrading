@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-26T14:02:11Z",
+  "query": {
+    "keywords": ["trading signals", "stock market alerts", "forex signals", "options flow"],
+    "countries": ["US", "GB", "IN"],
+    "window_start": "2026-08-27",
+    "window_end": "2026-09-26",
+    "window_days": 30
+  },
+  "source": {
+    "actor_id": "apify~facebook-ads-scraper",
+    "actor_fallbacks_tried": [],
+    "run_id": "aBcDeFgHiJkLmNoP",
+    "dataset_id": "XyZ1234567890",
+    "items_returned": 187,
+    "items_after_window_filter": 64,
+    "actual_charge_usd": 0.37,
+    "charge_cap_usd": 1.00
+  },
+  "ranking": {
+    "method": "weighted_longevity_signal",
+    "weights": { "active_days": 0.45, "is_active": 0.25, "platform_breadth": 0.15, "recency": 0.15 },
+    "excluded_reasons": { "outside_window": 123, "no_body_text": 9, "duplicate_collation": 11 }
+  },
+  "ads": [
+    {
+      "ad_id": "1234567890123",
+      "collation_id": "9876543210987",
+      "page_name": "Example Signals Co",
+      "page_id": "15087023444",
+      "is_active": true,
+      "started_running": "2026-09-04",
+      "ended_running": null,
+      "active_days": 22,
+      "publisher_platforms": ["FACEBOOK", "INSTAGRAM"],
+      "display_format": "VIDEO",
+      "cta_type": "LEARN_MORE",
+      "cta_text": "Learn more",
+      "link_url": "https://example.com/",
+      "body_text": "Most traders follow one voice. Here is what 16,000 sound like.",
+      "title": "Collective Intelligence",
+      "link_description": "See the consensus.",
+      "image_urls": [],
+      "video_urls": ["https://video.example.com/abc.mp4"],
+      "video_duration_s": 34.2,
+      "ad_library_url": "https://www.facebook.com/ads/library/?id=1234567890123",
+      "performance_score": 0.81,
+      "normalised_from": "apify~facebook-ads-scraper"
+    }
+  ],
+  "warnings": []
+}

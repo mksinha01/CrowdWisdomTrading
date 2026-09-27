@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "backend_chain_configured": [
+    "hyperframes",
+    "openmontage",
+    "local_ffmpeg"
+  ],
+  "backend_chain_tried": [
+    {
+      "backend": "hyperframes",
+      "available": true,
+      "attempted": true,
+      "succeeded": false,
+      "error": "npx hyperframes lint failed: clip s07 has no data-start",
+      "elapsed_s": 12.4
+    },
+    {
+      "backend": "openmontage",
+      "available": false,
+      "attempted": false,
+      "reason": "OPENMONTAGE_HOME not set (optional; not required)"
+    },
+    {
+      "backend": "local_ffmpeg",
+      "available": true,
+      "attempted": true,
+      "succeeded": true,
+      "elapsed_s": 96.3
+    }
+  ],
+  "backend_used": "local_ffmpeg",
+  "output": {
+    "path": "render/final.mp4",
+    "sha256": "9c1e...",
+    "duration_s": 42.03,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "audio_codec": "aac"
+  },
+  "loudness": {
+    "integrated_lufs": -14.1,
+    "true_peak_dbtp": -1.6,
+    "lra": 10.8
+  },
+  "argv": [
+    "ffmpeg",
+    "-y",
+    "-i",
+    "assets/s01.png",
+    "...",
+    "-filter_complex",
+    "...",
+    "out.mp4"
+  ],
+  "cwd": "runs/20260926-1402-a7f3",
+  "assets": [
+    {
+      "ref": "tension_bed_90bpm",
+      "path": "assets/cache/ab12….mp3",
+      "license": "CC0-1.0",
+      "source_url": "https://…",
+      "attribution_required": false
+    }
+  ],
+  "ffmpeg_version": "7.1",
+  "warnings": []
+}

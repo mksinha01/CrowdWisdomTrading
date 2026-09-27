@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "candidates": [
+    {
+      "id": "h01",
+      "archetype": "pattern_interrupt",
+      "text_overlay": "TOO MANY VOICES.",
+      "first_frame_description": "A single red candlestick on black, alone.",
+      "sound_design": "One clean synth note.",
+      "stop_power_score": 8.9,
+      "why_it_stops_the_scroll": "It externalises a feeling the viewer already has (signal overload) as a visual event in under two seconds, with no product and no claim on screen — so there is nothing to scroll past yet, only something to watch.",
+      "selected": true,
+      "rejection_reason": null
+    }
+  ],
+  "archetypes_covered": [
+    "pattern_interrupt",
+    "contrarian_stat",
+    "question",
+    "visual_shock",
+    "social_proof",
+    "pain_point"
+  ],
+  "underused_archetypes_boosted": [
+    "social_proof",
+    "pain_point"
+  ]
+}

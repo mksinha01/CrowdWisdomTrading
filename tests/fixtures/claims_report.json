@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "stage": "pre_render",
+  "verdict": "request_changes",
+  "deterministic": {
+    "ruleset_version": "1.0.0",
+    "findings": [
+      {
+        "rule_id": "unverifiable_statistic",
+        "severity": "hard",
+        "matched_text": "74.1% of our calls hit target",
+        "location": {
+          "shot_id": "s07",
+          "field": "on_screen_text"
+        },
+        "why": "Performance statistic the product cannot currently substantiate: its public track-record page and /api/predictions both return HTTP 404.",
+        "fix": "Remove the figure. Describe the process instead: every call is published with its outcome."
+      }
+    ]
+  },
+  "llm_judge": {
+    "model_tier": "cheap",
+    "findings": [
+      {
+        "rule_id": "implied_guarantee",
+        "severity": "soft",
+        "matched_text": "you will finally stop guessing",
+        "why": "Implies a certain outcome from using the product.",
+        "fix": "Soften to describe the process: 'you can see what the consensus is'."
+      }
+    ],
+    "escalations": 1
+  },
+  "rewrite_instructions": [
+    "Remove the figure. Describe the process instead: every call is published with its outcome."
+  ],
+  "rounds_used": 1,
+  "rounds_remaining": 2
+}

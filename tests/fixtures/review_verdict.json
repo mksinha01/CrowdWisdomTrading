@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "reviewer": "cwt-creative-director",
+  "round": 1,
+  "verdict": "request_changes",
+  "scores": {
+    "hook_strength": 9.1,
+    "mechanism_clarity": 7.2,
+    "proof_credibility": 9.0,
+    "emotional_arc": 6.8,
+    "brand_fit": 9.2,
+    "compliance_safety": 9.0
+  },
+  "weighted_mean": 8.14,
+  "threshold": 8.0,
+  "weakest_axes": [
+    "emotional_arc",
+    "mechanism_clarity"
+  ],
+  "changes_requested": "The mechanism beat (s05–s07) explains what we do but never lands why it changes the viewer's outcome. Add one shot at the end of the mechanism beat that shows the same ticker with and without consensus. Also the arc goes flat between the agitation and proof beats — give the proof beat a tonal lift.",
+  "must_fix": [
+    "emotional_arc",
+    "mechanism_clarity"
+  ],
+  "must_not_change": [
+    "visual_hook",
+    "s01",
+    "s02",
+    "compliance"
+  ]
+}

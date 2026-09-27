@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_ads_sha256": "3f2a...",
+  "patterns": [
+    {
+      "ad_id": "1234567890123",
+      "hook": {
+        "text": "Most traders follow one voice. Here is what 16,000 sound like.",
+        "archetype": "contrarian_stat",
+        "stop_power_score": 8.4,
+        "why_it_stops_the_scroll": "It asserts a number large enough to be implausible and immediately reframes the viewer as the one being left behind."
+      },
+      "pain": "Following a single analyst means inheriting one person's blind spots.",
+      "concept": "Consensus as a risk-control mechanism, not a return mechanism.",
+      "beat_sheet": [
+        { "beat": "hook", "start_s": 0.0, "end_s": 3.1, "what_happens": "Bold statement over a wall of overlapping talking-head thumbnails" },
+        { "beat": "problem", "start_s": 3.1, "end_s": 8.4, "what_happens": "Text: '1 opinion is not a strategy'" },
+        { "beat": "agitation", "start_s": 8.4, "end_s": 14.0, "what_happens": "Chart of one analyst's losing streak" },
+        { "beat": "mechanism", "start_s": 14.0, "end_s": 23.5, "what_happens": "Thumbnails converge into a single highlighted level" },
+        { "beat": "proof", "start_s": 23.5, "end_s": 29.0, "what_happens": "Grid of published calls with outcomes" },
+        { "beat": "cta", "start_s": 29.0, "end_s": 34.2, "what_happens": "Logo + 'See the consensus'" }
+      ]
+    }
+  ],
+  "aggregate": {
+    "ad_count": 12,
+    "archetype_distribution": { "contrarian_stat": 0.33, "bold_statement": 0.25, "pattern_interrupt": 0.17, "question": 0.17, "social_proof": 0.08 },
+    "median_hook_duration_s": 3.2,
+    "median_beat_timeline": [
+      { "beat": "hook", "start_s": 0.0, "end_s": 3.2, "tolerance_s": 1.2 },
+      { "beat": "problem", "start_s": 3.2, "end_s": 8.6, "tolerance_s": 2.0 },
+      { "beat": "agitation", "start_s": 8.6, "end_s": 14.2, "tolerance_s": 2.4 },
+      { "beat": "mechanism", "start_s": 14.2, "end_s": 23.8, "tolerance_s": 3.0 },
+      { "beat": "proof", "start_s": 23.8, "end_s": 29.4, "tolerance_s": 3.0 },
+      { "beat": "cta", "start_s": 29.4, "end_s": 34.0, "tolerance_s": 3.0 }
+    ],
+    "underused_high_durability": ["social_proof", "pain_point"]
+  },
+  "warnings": []
+}
