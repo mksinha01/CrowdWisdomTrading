@@ -850,3 +850,6 @@ class RenderManifest(ArtifactBase):
     assets: list[dict[str, Any]]
     ffmpeg_version: str
     warnings: list[str] = Field(default_factory=list)
+    # S16 addition (Rule C3): per-shot rendered timeline for QA risk-disclosure recompute.
+    # Optional so the §3.5 fixture still validates without this field.
+    shots: list[dict[str, Any]] | None = None

@@ -1,0 +1,155 @@
+[
+  {
+    "ref": "candle_proliferation",
+    "subject": "abstract_market_data",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Procedural candlestick grid — grows from 1 to 32 candles. Seeded from shot.id."
+  },
+  {
+    "ref": "single_cyan_line",
+    "subject": "abstract_market_data",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Single cyan horizontal line on black — used for the 'snap' beat."
+  },
+  {
+    "ref": "red_candle_wall",
+    "subject": "abstract_market_data",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Dense wall of red candlesticks — signal-overload visual. Seeded from shot.id."
+  },
+  {
+    "ref": "trader_silhouette_dusk",
+    "subject": "trader_silhouette",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Abstract geometric silhouette at dusk. No photograph — avoids model-release issue."
+  },
+  {
+    "ref": "trader_at_desk",
+    "subject": "trader_silhouette",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Geometric trader silhouette at a desk with monitor glow."
+  },
+  {
+    "ref": "chart_zoom_clean",
+    "subject": "chart_detail",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Clean technical chart with grid and cyan price line."
+  },
+  {
+    "ref": "chart_grid_dense",
+    "subject": "chart_detail",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Dense grid chart variant — more columns and rows."
+  },
+  {
+    "ref": "city_night_aerial",
+    "subject": "city_night",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Procedural aerial city skyline at night with lit windows."
+  },
+  {
+    "ref": "city_canary_wharf",
+    "subject": "city_night",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "City skyline variant with a distinctive tower (Canary Wharf reference)."
+  },
+  {
+    "ref": "screen_glow_blue",
+    "subject": "screen_glow",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Monitor glow in cyan with radial emanation and scan lines."
+  },
+  {
+    "ref": "screen_glow_amber",
+    "subject": "screen_glow",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Monitor glow in amber — alternate warmth palette."
+  },
+  {
+    "ref": "type_card_black",
+    "subject": "typography_card",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Brand typography on pure black background."
+  },
+  {
+    "ref": "type_card_cyan",
+    "subject": "typography_card",
+    "kind": "generated_chart",
+    "license": "internal",
+    "source_url": "generated://pillow",
+    "attribution_required": false,
+    "notes": "Brand typography with cyan text — CTA variant."
+  },
+  {
+    "ref": "tension_bed_90bpm",
+    "subject": null,
+    "kind": "cc0",
+    "license": "CC0-1.0",
+    "source_url": "synthesised://ffmpeg",
+    "attribution_required": false,
+    "notes": "90-second tension music bed synthesised via ffmpeg anoisesrc; silence fallback on failure."
+  },
+  {
+    "ref": "synth_note_clean",
+    "subject": null,
+    "kind": "cc0",
+    "license": "CC0-1.0",
+    "source_url": "synthesised://ffmpeg",
+    "attribution_required": false,
+    "notes": "Clean 440Hz sine tone with fade-out. Used at shot-start SFX cue."
+  },
+  {
+    "ref": "riser_cut_to_silence",
+    "subject": null,
+    "kind": "cc0",
+    "license": "CC0-1.0",
+    "source_url": "synthesised://ffmpeg",
+    "attribution_required": false,
+    "notes": "220Hz riser that cuts hard to silence at the snap beat."
+  },
+  {
+    "ref": "impact_low",
+    "subject": null,
+    "kind": "cc0",
+    "license": "CC0-1.0",
+    "source_url": "synthesised://ffmpeg",
+    "attribution_required": false,
+    "notes": "Low 60Hz impact SFX for emphasis cuts."
+  }
+]
