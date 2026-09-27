@@ -32,15 +32,15 @@ passed — not when the code is written.
 |---|---|---|---|---|
 | S08 | HTTP fixture cache / `--offline` | done | `4e3033e` | `pytest tests/test_http_cache.py` + B5 guard |
 | S09 | LLM client | done | `38932dc` | `pytest tests/test_llm_repair.py`, zero network |
-| S10 | Apify client | todo | | `pytest tests/test_apify.py` + Rule H2 assertion |
-| S11 | Tavily + Exa clients | todo | | `pytest tests/test_search.py` + legacy-enum grep |
-| S12 | TTS client & transcript | todo | | `pytest tests/test_tts.py` + timing contiguity |
+| S10 | Apify client | done | `22225e5` | `pytest tests/test_apify.py` + Rule H2 assertion |
+| S11 | Tavily + Exa clients | done | `ce4d2a6` | `pytest tests/test_search.py` + legacy-enum grep |
+| S12 | TTS client & transcript | done | `ce4d2a6` | `pytest tests/test_tts.py` + timing contiguity |
 
 ## Phase 3 — Prompts
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S13 | Prompt package | todo | | 13 templates import; `safe_format` degrades |
+| S13 | Prompt package | done | `ce4d2a6` | 13 templates import; `safe_format` degrades; 28 tests green |
 
 ## Phase 4 — Video
 
@@ -128,7 +128,7 @@ Cross-reference `00-INDEX.md` §5. Update a row when a defect is resolved or a n
 | G10 | `fixtures/assets` never enumerated | S17 | ☐ |
 | G11 | `Shot` field set only inferable from one example | S03 | ☐ |
 | G12 | `clients/tts.py` has no spec section | S12 | ☐ |
-| G13 | `safe_format` circular-import/NameError bug | S13 | ☐ |
+| G13 | `safe_format` circular-import/NameError bug | S13 | ☑ |
 | B3 | `engine_defaults_to_hermes` used, never defined | S01 | ☑ |
 | B4 | `scan_prohibited_facts` never wired by any tool | S24 | ☐ |
 | B5 | `request_cache_key` hashes a token-bearing URL | S08 | ☑ |
