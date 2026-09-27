@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import os
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -14,7 +13,6 @@ from cwt.bootstrap import (
     SKILL_NAMES,
     create_profiles,
     hermes_home,
-    install_hermes_assets,
     install_plugin,
     install_skills,
     merge_config,
@@ -26,9 +24,9 @@ from cwt.hermes.dag import DAG_SPEC
 
 class TestHermesHome:
     def test_default_hermes_home(self):
-        with patch.dict(os.environ, {}, clear=True):
+        with patch("pathlib.Path.home", return_value=Path("/fake/home")):
             home = hermes_home()
-            assert home == Path.home() / ".hermes"
+            assert home == Path("/fake/home/.hermes")
 
     def test_custom_hermes_home(self):
         with patch.dict(os.environ, {"HERMES_HOME": "/custom/path"}):
