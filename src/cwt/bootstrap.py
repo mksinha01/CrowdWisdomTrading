@@ -313,7 +313,7 @@ def create_profiles(*, hermes_home: Path, names: list[str]) -> list[str]:
     Returns list of created profile names.
     """
     created = []
-    hermes_bin = shutil.which("hermes") or shutil.which("hermes.cmd")
+    hermes_bin = os.getenv("HERMES_BIN", "").strip() or shutil.which("hermes") or shutil.which("hermes.cmd")
     if not hermes_bin:
         raise FileNotFoundError("hermes binary not found on PATH. Install Hermes first.")
 
