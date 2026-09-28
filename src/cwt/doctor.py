@@ -55,13 +55,17 @@ def _check_python() -> Check:
         return Check(
             "python",
             "fail",
-            f"{sys.version_info.major}.{sys.version_info.minor}",
+            f"{sys.version_info[:2]}",
             "Python 3.11+ required",
         )
+    try:
+        ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    except AttributeError:
+        ver = ".".join(str(x) for x in sys.version_info[:3])
     return Check(
         "python",
         "ok",
-        f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+        ver,
     )
 
 
