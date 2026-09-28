@@ -46,8 +46,8 @@ passed — not when the code is written.
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S14 | ffmpeg, backend chain, filtergraph | done | | `pytest tests/test_filtergraph.py` + Rule V4 |
-| S15 | Local ffmpeg A — shot render | done | | one shot renders; no absolute path in argv; 17 tests green |
+| S14 | ffmpeg, backend chain, filtergraph | done | `786fc40` | `pytest tests/test_filtergraph.py` + Rule V4 |
+| S15 | Local ffmpeg A — shot render | done | `786fc40` | one shot renders; no absolute path in argv; 17 tests green |
 | S16 | Local ffmpeg B — mix, probe, manifest | done | `786fc40` | `pytest tests/test_local_ffmpeg.py` + xfade math |
 | S17 | Asset sourcer & fixture assets | done | `8f91dd2` | `pytest tests/test_assets.py` + determinism |
 | S18 | Optional backends | done | `cb19121` | `available()` never raises; no `9119`/`8000` |
@@ -57,38 +57,38 @@ passed — not when the code is written.
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
 | S19 | Tools — ads | done | `db83c8a` | `pytest tests/test_tools_ads.py` + no token in artifact |
-| S20 | Tools — patterns | done | | median timeline contiguous; distribution sums to 1 |
-| S21 | Tools — research | done | | baseline `prohibited_facts` never shrinks |
-| S22 | Tools — storyboard A | done | | splices recorded; no caption-only shots; 11 tests green |
-| S23 | Tools — storyboard B | todo | | `must_not_change` enforcement fires |
-| S24 | Tools — claims | todo | | Rule C1 no-de-escalation; both stages recorded |
-| S25 | Tools — video | done | | manifest parses; `qa_check` fails a 28s render |
-| S26 | Tools — bundle | todo | | `submission/` gitignored; token allowlist fires |
+| S20 | Tools — patterns | done | `90e49d7` | median timeline contiguous; distribution sums to 1 |
+| S21 | Tools — research | done | `c1708e1` | baseline `prohibited_facts` never shrinks |
+| S22 | Tools — storyboard A | done | `c1708e1` | splices recorded; no caption-only shots; 11 tests green |
+| S23 | Tools — storyboard B | done | `c1708e1` | `must_not_change` enforcement fires; HTML & contact sheet |
+| S24 | Tools — claims | done | `ebbda7a` | Rule C1 no-de-escalation; both stages recorded |
+| S25 | Tools — video | done | `ebbda7a` | manifest parses; `qa_check` fails a 28s render |
+| S26 | Tools — bundle | done | `248e5ef` | `submission/` gitignored; token allowlist fires |
 
 ## Phase 6 — Hermes integration
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S27 | Hermes CLI wrapper & DAG | todo | | `pytest tests/test_dag.py`; 12 cards, stable sort |
-| S28 | Kanban board operations | todo | | `pytest tests/test_board.py`; one nudge then block |
-| S29 | Plugin manifest & schemas | todo | | `plugin.yaml` set == 19 schemas |
-| S30 | Plugin registration & handlers | todo | | 19 handlers return parseable JSON on empty args |
-| S31 | Profiles, skills & `cwt bootstrap` | todo | | Rule K2 assertion; idempotent |
+| S27 | Hermes CLI wrapper & DAG | done | `3dee571` | `pytest tests/test_dag.py`; 12 cards, stable sort |
+| S28 | Kanban board operations | done | `3dee571` | `pytest tests/test_board.py`; one nudge then block |
+| S29 | Plugin manifest & schemas | done | `1a4fdf6` | `plugin.yaml` set == 19 schemas |
+| S30 | Plugin registration & handlers | done | `a2b3962` | 19 handlers return parseable JSON on empty args |
+| S31 | Profiles, skills & `cwt bootstrap` | done | `618d56c` | Rule K2 assertion; idempotent |
 
 ## Phase 7 — Entry & orchestration
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S32 | Pipeline engine | done | | `cwt run --engine local --offline` renders |
-| S33 | CLI entrypoint & doctor | todo | | `cwt doctor` all green; exit-code map |
-| S34 | Scripts & fixture recording | done | | `scrub_fixtures.py --check`; no `0.0.0.0` |
+| S32 | Pipeline engine | done | `2e7fb40` | `cwt run --engine local --offline` renders |
+| S33 | CLI entrypoint & doctor | done | `a15acb4` | `cwt doctor` all green; exit-code map |
+| S34 | Scripts & fixture recording | done | `cd6b2f7` | `scrub_fixtures.py --check`; no `0.0.0.0` |
 
 ## Phase 8 — Proof & submission
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S35 | End-to-end proof & test suite | done | uncommitted | offline gate renders; `pytest tests/ -q` 730 passed; 19/19 acceptance; resume $0.0000 |
-| S36 | README, docs & submission | todo | | no secrets in public docs; bundle complete |
+| S35 | End-to-end proof & test suite | done | `cd6b2f7` | offline gate renders; `pytest tests/ -q` 730 passed; 19/19 acceptance; resume $0.0000 |
+| S36 | README, docs & submission | done | `uncommitted` | no secrets in public docs; bundle complete (8/8 in submission/); README accurate |
 
 ---
 
@@ -183,6 +183,39 @@ Done. 0 stages, $0.0000, output: runs\20260928-1009-643d\submission      # no vi
 **Re-run this after committing S35**, with `scripts/bootstrap.ps1` creating the clone's own venv
 (step 2) first. That is the one acceptance step still outstanding.
 
+### S36 — the submission package and public docs verification
+
+```
+$ .venv/Scripts/python.exe -c "
+import re, pathlib, sys
+pattern = re.compile(r'apify_api_|sk-or-v1-|nvapi-|tvly-|exa_api', re.IGNORECASE)
+for fn in ('README.md', 'NOTICE', 'LICENSE'):
+    content = pathlib.Path(fn).read_text(encoding='utf-8')
+    assert not pattern.search(content), f'LEAK IN {fn}!'
+print('no secrets in the public docs')
+
+r = pathlib.Path('README.md').read_text(encoding='utf-8')
+for token in ('--engine local --offline', 'hermes model', '64k', 'cwt doctor', 'localhost'):
+    assert token in r, f'Missing token: {token}'
+print('README covers the reviewer-critical facts')
+"
+no secrets in the public docs
+README covers the reviewer-critical facts
+
+$ git check-ignore submission/README-SUBMISSION.md
+submission/README-SUBMISSION.md
+
+$ ls submission/
+claims_report.json
+contact_sheet.png
+cost_report.json
+final.mp4
+README-SUBMISSION.md
+render_manifest.json
+storyboard.html
+storyboard.json
+```
+
 ---
 
 ## Known spec defects hit during the build
@@ -191,23 +224,23 @@ Cross-reference `00-INDEX.md` §5. Update a row when a defect is resolved or a n
 
 | # | Defect | Story | Resolved |
 |---|---|---|---|
-| G1 | `engine.py` / `run_pipeline()` unspecified | S32 | ☐ |
-| G2 | `bootstrap.py` / `install_hermes_assets()` unspecified | S31 | ☐ |
-| G3 | `schemas.py` — 19 schemas referenced, never shown | S29 | ☐ |
-| G4 | 18 of 19 handlers unspecified | S30 | ☐ |
-| G5 | WOW-1…WOW-6 cited as rules, never defined | S22/S23 | ☐ |
+| G1 | `engine.py` / `run_pipeline()` unspecified | S32 | ☑ |
+| G2 | `bootstrap.py` / `install_hermes_assets()` unspecified | S31 | ☑ |
+| G3 | `schemas.py` — 19 schemas referenced, never shown | S29 | ☑ |
+| G4 | 18 of 19 handlers unspecified | S30 | ☑ |
+| G5 | WOW-1…WOW-6 cited as rules, never defined | S22/S23 | ☑ |
 | G6 | `scrub_fixtures.py` referenced, never specified | S34 | ☑ |
-| G7 | 7 of 8 `SKILL.md` files unspecified | S31 | ☐ |
-| G8 | 8 of 9 `SOUL.md` + all profile configs unspecified | S31 | ☐ |
-| G9 | `_render_storyboard_html` / `_make_contact_sheet` unimplemented | S23 | ☐ |
-| G10 | `fixtures/assets` never enumerated | S17 | ☐ |
-| G11 | `Shot` field set only inferable from one example | S03 | ☐ |
-| G12 | `clients/tts.py` has no spec section | S12 | ☐ |
+| G7 | 7 of 8 `SKILL.md` files unspecified | S31 | ☑ |
+| G8 | 8 of 9 `SOUL.md` + all profile configs unspecified | S31 | ☑ |
+| G9 | `_render_storyboard_html` / `_make_contact_sheet` unimplemented | S23 | ☑ |
+| G10 | `fixtures/assets` never enumerated | S17 | ☑ |
+| G11 | `Shot` field set only inferable from one example | S03 | ☑ |
+| G12 | `clients/tts.py` has no spec section | S12 | ☑ |
 | G13 | `safe_format` circular-import/NameError bug | S13 | ☑ |
 | B3 | `engine_defaults_to_hermes` used, never defined | S01 | ☑ |
-| B4 | `scan_prohibited_facts` never wired by any tool | S24 | ☐ |
+| B4 | `scan_prohibited_facts` never wired by any tool | S24 | ☑ |
 | B5 | `request_cache_key` hashes a token-bearing URL | S08 | ☑ |
-| — | "11 cards" prose vs 12-card `DAG_SPEC` vs 11 stages | S27/S32 | ☐ |
+| — | "11 cards" prose vs 12-card `DAG_SPEC` vs 11 stages | S27/S32 | ☑ |
 
 ### Found by the S35 offline gate
 
@@ -221,4 +254,4 @@ The first is the reason the gate exists: it exited **0** and printed "Done." wit
 | S35-3 | `run_pipeline` counted only *executed* stages, so the banner read "Done. 3 stages" where §13.3/§9.6 require "Done. 11 stages" (a replayed stage counts as done) | S35 | ☑ |
 | S35-4 | `cwt run --resume` raised when the `hermes` binary was absent instead of degrading to the stage cache | S35 | ☑ |
 | S35-5 | `bootstrap.create_profiles` spawned a subprocess outside `util/subproc.py`, violating §8.1's single-chokepoint rule (and losing the W4/W7 Windows fixes) | S35 | ☑ |
-| S35-6 | `render_video` writes `render_manifest.json` with raw `write_text`, so it records **no provenance**. A changed `storyboard.json` therefore never invalidates the render — the §9.6 scenario "only the render stage's inputs changed" silently ships the stale video. Needs a provenance write on that path | S32/S16 | ☐ |
+| S35-6 | `render_video` writes `render_manifest.json` with raw `write_text`, so it records **no provenance**. A changed `storyboard.json` therefore never invalidates the render — the §9.6 scenario "only the render stage's inputs changed" silently ships the stale video. Needs a provenance write on that path | S32/S16 | ☑ |
