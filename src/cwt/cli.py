@@ -15,19 +15,19 @@ import json
 import shutil
 import sys
 from pathlib import Path
-from typing import Sequence
 
 from rich.console import Console
 
 from cwt.config import Settings
+from cwt.util.paths import RunPaths, mint_run_id
 
 console = Console()
 EXIT_OK, EXIT_CONFIG, EXIT_TIMEOUT, EXIT_BLOCKED, EXIT_BUDGET = 0, 1, 2, 3, 4
 
 
-def _banner(settings: Settings, paths: object, offline: bool, engine: str) -> None:
-    """The config echo. This is the first debugging tool in production and it costs nothing.
-    """
+def _banner(settings: Settings, paths: RunPaths, offline: bool, engine: str) -> None:
+    """The config echo. This is the first debugging tool in production and it
+    costs nothing to print."""
     try:
         from cwt.video.ffmpeg_bin import ffmpeg_path, ffmpeg_version
         ff = f"{ffmpeg_path()}  ({ffmpeg_version()})"
@@ -39,54 +39,65 @@ def _banner(settings: Settings, paths: object, offline: bool, engine: str) -> No
     except Exception as exc:
         hm = f"[red]NOT FOUND: {exc}[/red]"
 
-    run_dir = getattr(paths, "run_dir", Path("runs"))
-    run_name = getattr(run_dir, "name", "unknown")
+    try:
+        run_dir = getattr(paths, "run_dir", paths)
+        run_name = getattr(run_dir, "name", str(run_dir))
 
-    console.print("[bold cyan]=== CWT Video Ads Agent ===[/bold cyan]")
-    console.print(f"run_id       {run_name}")
-    console.print(f"run_dir      {run_dir}")
-    console.print(f"engine       {engine}")
-    console.print(f"offline      {offline}")
-    console.print(f"provider     {settings.llm_provider}  "
-                  f"(cheap={settings.model_cheap}  strong={settings.model_strong})")
-    console.print(f"video        {','.join(settings.video_backend_chain)}")
-    console.print(f"ffmpeg       {ff}")
-    console.print(f"hermes       {hm}")
-    console.print(f"board        {settings.board}")
-    console.print(f"budget       ${settings.max_usd:.2f}")
+        console.print("[bold cyan]=== CWT Video Ads Agent ===[/bold cyan]")
+        console.print(f"run_id       {run_name}")
+        console.print(f"run_dir      {run_dir}")
+        console.print(f"engine       {engine}")
+        console.print(f"offline      {offline}")
+        console.print(f"provider     {getattr(settings, 'llm_provider', '')}  "
+                      f"(cheap={getattr(settings, 'model_cheap', '')}  strong={getattr(settings, 'model_strong', '')})")
+        video_chain = getattr(settings, "video_backend_chain", [])
+        console.print(f"video        {','.join(video_chain)}")
+        console.print(f"ffmpeg       {ff}")
+        console.print(f"hermes       {hm}")
+        console.print(f"board        {getattr(settings, 'board', '')}")
+        console.print(f"budget       ${getattr(settings, 'max_usd', 0.0):.2f}")
+    except Exception as exc:
+        console.print(f"[red]Error rendering banner: {exc}[/red]")
 
 
 async def _cmd_run(args: argparse.Namespace) -> int:
     from cwt.engine import run_pipeline
-    from cwt.util.paths import RunPaths, mint_run_id
 
     settings = Settings.from_env()
-    if args.backend:
+    if getattr(args, "backend", None):
         settings = settings.with_backend_chain([args.backend])
-    run_id = args.run_id or mint_run_id()
-    paths = RunPaths(Path(args.run_dir or "runs") / run_id).ensure()
+    run_id = getattr(args, "run_id", None) or mint_run_id()
+    paths = RunPaths(Path(getattr(args, "run_dir", None) or "runs") / run_id).ensure()
 
-    if args.engine == "hermes" and not args.offline:
+    if getattr(args, "resume", False):
+        from cwt.hermes.board import resume
+        resume(run_id, settings.board)
+
+    if getattr(args, "engine", "hermes") == "hermes" and not getattr(args, "offline", False):
         pass  # doctor has already verified the gateway is reachable
-    _banner(settings, paths, args.offline, args.engine)
+    _banner(settings, paths, getattr(args, "offline", False), getattr(args, "engine", "hermes"))
 
     try:
-        summary = await run_pipeline(settings=settings, paths=paths, engine=args.engine,
-                                     offline=args.offline, record_pacing=args.record_pacing,
-                                     force_stage=args.force_stage)
+        summary = await run_pipeline(
+            settings=settings,
+            paths=paths,
+            engine=getattr(args, "engine", "hermes"),
+            offline=getattr(args, "offline", False),
+            record_pacing=getattr(args, "record_pacing", False),
+            force_stage=getattr(args, "force_stage", []),
+        )
     except Exception as exc:
         name = type(exc).__name__
         console.print(f"[red]{name}: {exc}[/red]")
         return {"PipelineTimeout": EXIT_TIMEOUT, "PipelineBlocked": EXIT_BLOCKED,
                 "BudgetExceeded": EXIT_BUDGET}.get(name, EXIT_CONFIG)
 
-    stages_count = summary["done"] + summary.get("skipped", 0)
-    console.print(f"[bold green]Done.[/bold green] {stages_count} stages, "
+    console.print(f"[bold green]Done.[/bold green] {summary['done']} stages, "
                   f"${summary['cost_usd']:.4f}, output: {summary['output']}")
     return EXIT_OK
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="cwt", description="CWT Video Ads Agent")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -124,7 +135,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return run_doctor(json_output=args.json)
     if args.command == "seed":
         from cwt.hermes.board import seed
-        from cwt.util.paths import RunPaths
         settings = Settings.from_env()
         paths = RunPaths(Path("runs") / args.run_id).ensure()
         ids = seed(args.run_id, paths.run_dir, settings.board)
@@ -132,7 +142,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return EXIT_OK
     if args.command == "status":
         from cwt.hermes.board import _render_progress, list_cards
-        _render_progress(list_cards(Settings.from_env().board))
+        try:
+            cards = list_cards(Settings.from_env().board)
+        except Exception:
+            cards = []
+        _render_progress(cards)
         return EXIT_OK
     if args.command == "bootstrap":
         from cwt.bootstrap import install_hermes_assets
