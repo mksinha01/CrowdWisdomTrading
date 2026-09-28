@@ -80,7 +80,8 @@ async def _cmd_run(args: argparse.Namespace) -> int:
         return {"PipelineTimeout": EXIT_TIMEOUT, "PipelineBlocked": EXIT_BLOCKED,
                 "BudgetExceeded": EXIT_BUDGET}.get(name, EXIT_CONFIG)
 
-    console.print(f"[bold green]Done.[/bold green] {summary['done']} stages, "
+    stages_count = summary["done"] + summary.get("skipped", 0)
+    console.print(f"[bold green]Done.[/bold green] {stages_count} stages, "
                   f"${summary['cost_usd']:.4f}, output: {summary['output']}")
     return EXIT_OK
 

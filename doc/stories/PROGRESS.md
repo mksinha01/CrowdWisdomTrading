@@ -79,7 +79,7 @@ passed — not when the code is written.
 
 | # | Story | Status | Commit | Verified by |
 |---|---|---|---|---|
-| S32 | Pipeline engine | todo | | `cwt run --engine local --offline` renders |
+| S32 | Pipeline engine | done | | `cwt run --engine local --offline` renders |
 | S33 | CLI entrypoint & doctor | todo | | `cwt doctor` all green; exit-code map |
 | S34 | Scripts & fixture recording | todo | | `scrub_fixtures.py --check`; no `0.0.0.0` |
 

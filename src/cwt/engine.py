@@ -410,7 +410,12 @@ async def _run_stage_local(
         return await _run_compliance_stage(settings, paths, client)
 
     if key == "render":
-        video.synthesize_voiceover(settings=settings, paths=paths)
+        tts_settings = (
+            settings.model_copy(update={"tts_backend_chain": ["silent"]})
+            if offline
+            else settings
+        )
+        video.synthesize_voiceover(settings=tts_settings, paths=paths)
         render_res = video.render_video(settings=settings, paths=paths)
         return str(render_res["artifact_path"])
 
@@ -418,7 +423,7 @@ async def _run_stage_local(
         qa_res = video.qa_check(settings=settings, paths=paths, client=client, raise_on_error=False)
         if not qa_res.get("ok"):
             raise ToolFailed(f"QA failed: {qa_res.get('errors')}", "qa")
-        return str(paths.artifacts / "render_manifest.json")
+        return str(paths.artifacts / "claims_report_post_render.json")
 
     if key == "collect":
         bundle_res = bundle.assemble_submission(settings=settings, paths=paths)
