@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "candidates": [
+    {
+      "id": "h01",
+      "archetype": "social_proof",
+      "text_overlay": "THEY DISAGREE 1",
+      "first_frame_description": "Trader reviewing crowd consensus chart.",
+      "sound_design": "Subtle hum.",
+      "stop_power_score": 10.0,
+      "why_it_stops_the_scroll": "Social proof mechanism.",
+      "selected": true,
+      "rejection_reason": null
+    },
+    {
+      "id": "h02",
+      "archetype": "social_proof",
+      "text_overlay": "THEY DISAGREE 2",
+      "first_frame_description": "Trader reviewing crowd consensus chart.",
+      "sound_design": "Subtle hum.",
+      "stop_power_score": 10.0,
+      "why_it_stops_the_scroll": "Social proof mechanism.",
+      "selected": false,
+      "rejection_reason": "Runner-up to social_proof (h01) with score 10.0"
+    },
+    {
+      "id": "h03",
+      "archetype": "pain_point",
+      "text_overlay": "SIGNAL OVERLOAD 3",
+      "first_frame_description": "Overwhelmed trader staring at red charts.",
+      "sound_design": "Static noise.",
+      "stop_power_score": 9.3,
+      "why_it_stops_the_scroll": "Directly addresses emotional fatigue.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (9.3) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h04",
+      "archetype": "pain_point",
+      "text_overlay": "SIGNAL OVERLOAD 4",
+      "first_frame_description": "Overwhelmed trader staring at red charts.",
+      "sound_design": "Static noise.",
+      "stop_power_score": 9.3,
+      "why_it_stops_the_scroll": "Directly addresses emotional fatigue.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (9.3) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h05",
+      "archetype": "pattern_interrupt",
+      "text_overlay": "HOOK 5",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.3,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.3) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h06",
+      "archetype": "contrarian_stat",
+      "text_overlay": "HOOK 6",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.3,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.3) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h07",
+      "archetype": "question",
+      "text_overlay": "HOOK 7",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.8,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.8) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h08",
+      "archetype": "visual_shock",
+      "text_overlay": "HOOK 8",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.3,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.3) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h09",
+      "archetype": "pattern_interrupt",
+      "text_overlay": "HOOK 9",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.3,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.3) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h10",
+      "archetype": "contrarian_stat",
+      "text_overlay": "HOOK 10",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.3,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.3) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h11",
+      "archetype": "question",
+      "text_overlay": "HOOK 11",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.8,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.8) than winning social_proof (10.0)"
+    },
+    {
+      "id": "h12",
+      "archetype": "visual_shock",
+      "text_overlay": "HOOK 12",
+      "first_frame_description": "Striking visual opening.",
+      "sound_design": "Clean synth sweep.",
+      "stop_power_score": 8.3,
+      "why_it_stops_the_scroll": "Pattern interruption.",
+      "selected": false,
+      "rejection_reason": "Lower stop-power score (8.3) than winning social_proof (10.0)"
+    }
+  ],
+  "archetypes_covered": [
+    "social_proof",
+    "pain_point",
+    "pattern_interrupt",
+    "contrarian_stat",
+    "question",
+    "visual_shock"
+  ],
+  "underused_archetypes_boosted": [
+    "social_proof",
+    "pain_point",
+    "question"
+  ]
+}

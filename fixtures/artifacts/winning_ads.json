@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-27T11:45:17Z",
+  "query": {
+    "keywords": [
+      "forex signals"
+    ],
+    "countries": [
+      "US",
+      "GB",
+      "IN"
+    ],
+    "window_start": "2026-08-28",
+    "window_end": "2026-09-27",
+    "window_days": 30
+  },
+  "source": {
+    "actor_id": "apify~facebook-ads-scraper",
+    "actor_fallbacks_tried": [],
+    "run_id": "run_apify_fixture_01",
+    "dataset_id": "ds_apify_fixture_01",
+    "items_returned": 4,
+    "items_after_window_filter": 4,
+    "actual_charge_usd": 0.36,
+    "charge_cap_usd": 1.0
+  },
+  "ranking": {
+    "method": "unranked",
+    "weights": {},
+    "excluded_reasons": {
+      "outside_window": 0,
+      "no_body_text": 1,
+      "duplicate_collation": 0,
+      "duplicate_copy": 0
+    }
+  },
+  "ads": [
+    {
+      "ad_id": "1234567890123",
+      "collation_id": "9876543210987",
+      "page_name": "Example Signals Co",
+      "page_id": "15087023444",
+      "is_active": true,
+      "started_running": "2026-09-04",
+      "ended_running": null,
+      "active_days": 23,
+      "publisher_platforms": [
+        "FACEBOOK",
+        "INSTAGRAM"
+      ],
+      "display_format": "VIDEO",
+      "cta_type": "LEARN_MORE",
+      "cta_text": "Learn more",
+      "link_url": "https://example.com/",
+      "body_text": "Most traders follow one voice. Here is what 16,000 sound like.",
+      "title": "Collective Intelligence",
+      "link_description": "See the consensus.",
+      "image_urls": [],
+      "video_urls": [
+        "https://video.example.com/hd.mp4"
+      ],
+      "video_duration_s": 34.2,
+      "ad_library_url": "https://www.facebook.com/ads/library/?id=1234567890123",
+      "performance_score": 0.0,
+      "normalised_from": "apify~facebook-ads-scraper"
+    },
+    {
+      "ad_id": "2345678901234",
+      "collation_id": "12345",
+      "page_name": "Forex Consensus Pro",
+      "page_id": "22334455",
+      "is_active": true,
+      "started_running": "2026-09-04",
+      "ended_running": null,
+      "active_days": 23,
+      "publisher_platforms": [
+        "FACEBOOK"
+      ],
+      "display_format": "VIDEO",
+      "cta_type": "SIGN_UP",
+      "cta_text": "Sign Up",
+      "link_url": "https://example.com/signup",
+      "body_text": "Stop guessing market turns alone.",
+      "title": "Market Consensus",
+      "link_description": "Signals validated by real traders",
+      "image_urls": [],
+      "video_urls": [
+        "https://video.example.com/sd.mp4"
+      ],
+      "video_duration_s": null,
+      "ad_library_url": "https://www.facebook.com/ads/library/?id=2345678901234",
+      "performance_score": 0.0,
+      "normalised_from": "apify~facebook-ads-scraper"
+    },
+    {
+      "ad_id": "3456789012345",
+      "collation_id": null,
+      "page_name": "Trading Insights Daily",
+      "page_id": "33445566",
+      "is_active": false,
+      "started_running": "2026-08-28",
+      "ended_running": "2026-09-20",
+      "active_days": 23,
+      "publisher_platforms": [
+        "FACEBOOK"
+      ],
+      "display_format": "IMAGE",
+      "cta_type": null,
+      "cta_text": null,
+      "link_url": "https://example.com/daily",
+      "body_text": "Historical accuracy across 4 asset classes.",
+      "title": "Daily Insights",
+      "link_description": null,
+      "image_urls": [
+        "https://img.example.com/chart.png"
+      ],
+      "video_urls": [],
+      "video_duration_s": null,
+      "ad_library_url": "https://www.facebook.com/ads/library/?id=3456789012345",
+      "performance_score": 0.0,
+      "normalised_from": "apify~facebook-ads-scraper"
+    }
+  ],
+  "warnings": [
+    "fewer than 8 ads inside window (3 found); window was NOT widened"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "angle": "pain",
+  "claims": [
+    {
+      "text": "Retail traders experience decision fatigue with multiple signal providers.",
+      "source_url": "https://example.com/pain-article",
+      "source_title": "Trading Fatigue",
+      "published_date": "2026-09-10",
+      "provider": "tavily",
+      "confidence": 0.85
+    }
+  ],
+  "synthesis": "Self-directed retail traders suffer paralysis when signals conflict.",
+  "search_queries_used": [
+    "retail trader signal overload",
+    "trading signal fatigue 2026",
+    "following too many analysts",
+    "trader decision paralysis"
+  ]
+}

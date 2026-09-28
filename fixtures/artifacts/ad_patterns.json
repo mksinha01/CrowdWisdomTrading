@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "source_ads_sha256": "3e00b9b05ceec4c89831b2026c8ecb01ac3f65632d2252b5bbf18f0b3f0a022c",
+  "patterns": [
+    {
+      "ad_id": "1234567890123",
+      "hook": {
+        "text": "Most traders follow one voice. Here is what 16,000 sound like.",
+        "archetype": "contrarian_stat",
+        "stop_power_score": 8.4,
+        "why_it_stops_the_scroll": "Asserts an implausible stat forcing re-reading."
+      },
+      "pain": "Following single analyst inherits blind spots.",
+      "concept": "Consensus as risk control.",
+      "beat_sheet": [
+        {
+          "beat": "hook",
+          "start_s": 0.0,
+          "end_s": 3.0,
+          "what_happens": "Bold statement"
+        },
+        {
+          "beat": "problem",
+          "start_s": 3.0,
+          "end_s": 8.0,
+          "what_happens": "Problem text"
+        },
+        {
+          "beat": "mechanism",
+          "start_s": 8.0,
+          "end_s": 20.0,
+          "what_happens": "Consensus demo"
+        },
+        {
+          "beat": "cta",
+          "start_s": 20.0,
+          "end_s": 30.0,
+          "what_happens": "Logo + CTA"
+        }
+      ]
+    },
+    {
+      "ad_id": "2345678901234",
+      "hook": {
+        "text": "Most traders follow one voice. Here is what 16,000 sound like.",
+        "archetype": "contrarian_stat",
+        "stop_power_score": 8.4,
+        "why_it_stops_the_scroll": "Asserts an implausible stat forcing re-reading."
+      },
+      "pain": "Following single analyst inherits blind spots.",
+      "concept": "Consensus as risk control.",
+      "beat_sheet": []
+    },
+    {
+      "ad_id": "3456789012345",
+      "hook": {
+        "text": "Most traders follow one voice. Here is what 16,000 sound like.",
+        "archetype": "contrarian_stat",
+        "stop_power_score": 8.4,
+        "why_it_stops_the_scroll": "Asserts an implausible stat forcing re-reading."
+      },
+      "pain": "Following single analyst inherits blind spots.",
+      "concept": "Consensus as risk control.",
+      "beat_sheet": []
+    }
+  ],
+  "aggregate": {
+    "ad_count": 3,
+    "archetype_distribution": {
+      "contrarian_stat": 1.0
+    },
+    "median_hook_duration_s": 3.0,
+    "median_beat_timeline": [
+      {
+        "beat": "hook",
+        "start_s": 0.0,
+        "end_s": 2.74,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "problem",
+        "start_s": 2.74,
+        "end_s": 7.19,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "agitation",
+        "start_s": 7.19,
+        "end_s": 11.64,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "mechanism",
+        "start_s": 11.64,
+        "end_s": 19.51,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "proof",
+        "start_s": 19.51,
+        "end_s": 24.64,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "objection",
+        "start_s": 24.64,
+        "end_s": 29.09,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "cta",
+        "start_s": 29.09,
+        "end_s": 34.2,
+        "tolerance_s": 3.0
+      }
+    ],
+    "underused_high_durability": []
+  },
+  "warnings": [
+    "beat_sheet_skipped:no_duration:2345678901234",
+    "beat_sheet_skipped:no_duration:3456789012345",
+    "Timeline defaulted: only 1 sheets available (min 5)",
+    "Default durability used: only 3 hooks with score (< 8)"
+  ]
+}

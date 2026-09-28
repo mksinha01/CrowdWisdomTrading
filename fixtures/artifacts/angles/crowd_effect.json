@@ -1,0 +1,21 @@
+{
+  "angle": "crowd_effect",
+  "claims": [
+    {
+      "text": "Aggregated independent forecasts outperform individual domain experts.",
+      "source_url": "https://example.com/tetlock-paper",
+      "source_title": "Superforecasting Research",
+      "published_date": "2026-09-05",
+      "provider": "tavily",
+      "confidence": 0.88
+    }
+  ],
+  "synthesis": "Aggregation of diverse forecasters yields higher calibration than single gurus.",
+  "search_queries_used": [
+    "wisdom of crowds forecast accuracy",
+    "superforecaster aggregation",
+    "Tetlock superforecasters",
+    "information cascades herding traders"
+  ],
+  "counterargument": "Crowds fail when participants herd or share correlated information cascades."
+}

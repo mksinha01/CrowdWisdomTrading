@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "stage": "pre_render",
+  "verdict": "pass",
+  "deterministic": {
+    "ruleset_version": "1.0.0",
+    "findings": []
+  },
+  "llm_judge": {
+    "model_tier": "cheap",
+    "findings": [],
+    "escalations": 0
+  },
+  "rewrite_instructions": [],
+  "rounds_used": 1,
+  "rounds_remaining": 2,
+  "stage_reports": {
+    "post_render": "runs\\_s24\\artifacts\\claims_report_post_render.json",
+    "pre_render": "runs\\_s24\\artifacts\\claims_report_pre_render.json"
+  }
+}

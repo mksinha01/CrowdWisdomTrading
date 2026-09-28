@@ -1,0 +1,1048 @@
+{
+  "schema_version": 1,
+  "meta": {
+    "run_id": "20260926-1402-a7f3",
+    "generated_at": "2026-09-26T14:31:52Z",
+    "product": "CrowdWisdomTrading",
+    "landing_url": "https://crowdwisdomtrading.com/",
+    "total_duration_s": 42.0,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "fps": 30,
+    "angle": "crowd_effect",
+    "angle_rationale": "Chosen because the public per-prediction record is the only claim in this niche that a competitor cannot copy, and it survives the claims gate without needing an unverifiable statistic."
+  },
+  "visual_hook": {
+    "archetype": "visual_shock",
+    "first_3_seconds": "A single red candlestick, alone on black. It multiplies — two, four, sixteen — until the frame is a wall of noise. Then all of it snaps to silence and one cyan line remains.",
+    "text_overlay": "TOO MANY VOICES.",
+    "sound_design": "One clean synth note, then a rising cluster of detuned voices that cuts to silence on the snap.",
+    "stop_power_score": 8.9,
+    "why_it_stops_the_scroll": "It externalises a feeling the viewer already has (signal overload) as a visual event in under two seconds, with no product and no claim on screen — so there is nothing to scroll past yet, only something to watch.",
+    "alternatives_considered": [
+      {
+        "archetype": "contrarian_stat",
+        "text_overlay": "11,000 ANALYSTS. ONE ANSWER.",
+        "rejected_because": "Depends on a count we cannot substantiate; fails the claims gate."
+      },
+      {
+        "archetype": "question",
+        "text_overlay": "WHO DO YOU TRUST?",
+        "rejected_because": "Question hooks are common in this vertical and score lower on pattern interruption."
+      },
+      {
+        "archetype": "social_proof",
+        "text_overlay": "THEY DISAGREE. THAT'S THE POINT.",
+        "rejected_because": "Strong and underused, but it resolves the tension in the hook instead of opening it. Held for a variant."
+      }
+    ]
+  },
+  "beats": [
+    {
+      "beat": "hook",
+      "start_s": 0.0,
+      "end_s": 3.4,
+      "tolerance_s": 1.2,
+      "on_target": true
+    },
+    {
+      "beat": "problem",
+      "start_s": 3.4,
+      "end_s": 8.8,
+      "tolerance_s": 2.0,
+      "on_target": true
+    },
+    {
+      "beat": "agitation",
+      "start_s": 8.8,
+      "end_s": 14.6,
+      "tolerance_s": 2.4,
+      "on_target": true
+    },
+    {
+      "beat": "mechanism",
+      "start_s": 14.6,
+      "end_s": 24.1,
+      "tolerance_s": 3.0,
+      "on_target": true
+    },
+    {
+      "beat": "proof",
+      "start_s": 24.1,
+      "end_s": 30.2,
+      "tolerance_s": 3.0,
+      "on_target": true
+    },
+    {
+      "beat": "objection",
+      "start_s": 30.2,
+      "end_s": 35.9,
+      "tolerance_s": 3.0,
+      "on_target": true
+    },
+    {
+      "beat": "cta",
+      "start_s": 35.9,
+      "end_s": 42.0,
+      "tolerance_s": 3.0,
+      "on_target": true
+    }
+  ],
+  "shots": [
+    {
+      "id": "s01",
+      "beat": "hook",
+      "start_s": 0.0,
+      "duration_s": 3.4,
+      "description": "Single red candlestick on pure black, centred. It duplicates outward in a widening grid until the frame is dense with flickering red and green.",
+      "subject": "abstract_market_data",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "candle_proliferation",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "static",
+        "intensity": 0.0,
+        "lens_mm": 50,
+        "depth_of_field": "deep",
+        "stabilisation": "locked"
+      },
+      "lighting": {
+        "key": "none",
+        "contrast": "extreme",
+        "colour_temp_k": 6500
+      },
+      "palette": [
+        "#050505",
+        "#1a1a1a",
+        "#ef4444",
+        "#22d3ee"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "transition_out": {
+        "type": "flash_white",
+        "duration_s": 0.12
+      },
+      "on_screen_text": [],
+      "sfx": [
+        {
+          "ref": "synth_note_clean",
+          "at_s": 0.0,
+          "gain_db": -6.0
+        }
+      ]
+    },
+    {
+      "id": "s02",
+      "beat": "hook",
+      "start_s": 3.4,
+      "duration_s": 0.0,
+      "description": "The wall of candles snaps to black. One cyan horizontal line draws itself left to right across the centre of frame.",
+      "subject": "abstract_market_data",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "single_cyan_line",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "push_in",
+        "intensity": 0.35,
+        "lens_mm": 85,
+        "depth_of_field": "shallow",
+        "stabilisation": "smooth"
+      },
+      "lighting": {
+        "key": "practical_cyan",
+        "contrast": "high",
+        "colour_temp_k": 7000
+      },
+      "palette": [
+        "#050505",
+        "#0a0a0a",
+        "#22d3ee",
+        "#e2e8f0"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "flash_white",
+        "duration_s": 0.12
+      },
+      "transition_out": {
+        "type": "dissolve",
+        "duration_s": 0.4
+      },
+      "on_screen_text": [
+        {
+          "text": "TOO MANY VOICES.",
+          "at_s": 3.6,
+          "until_s": 6.0,
+          "style": "display_black",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "riser_cut_to_silence",
+          "at_s": 3.4,
+          "gain_db": -3.0
+        }
+      ]
+    },
+    {
+      "id": "s03",
+      "beat": "problem",
+      "start_s": 3.4,
+      "duration_s": 5.4,
+      "description": "Grid of talking-head trader thumbnails flickering in and out. Conflicting signal notifications flood the screen.",
+      "subject": "screen_glow",
+      "asset": {
+        "kind": "cc0_clip",
+        "ref": "trader_screens",
+        "source": "cc0"
+      },
+      "camera": {
+        "move": "static",
+        "intensity": 0.1,
+        "lens_mm": 35,
+        "depth_of_field": "medium",
+        "stabilisation": "locked"
+      },
+      "lighting": {
+        "key": "screen_glow",
+        "contrast": "high",
+        "colour_temp_k": 6500
+      },
+      "palette": [
+        "#050505",
+        "#0f172a",
+        "#38bdf8",
+        "#f1f5f9"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "dissolve",
+        "duration_s": 0.4
+      },
+      "transition_out": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "on_screen_text": [
+        {
+          "text": "EVERYONE IS CERTAIN.",
+          "at_s": 4.5,
+          "until_s": 7.5,
+          "style": "caption_bold",
+          "position": "center"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "notification_chime",
+          "at_s": 4.0,
+          "gain_db": -8.0
+        }
+      ]
+    },
+    {
+      "id": "s04",
+      "beat": "agitation",
+      "start_s": 8.8,
+      "duration_s": 5.8,
+      "description": "Silhouette of a lone trader staring at divergent charts. A single red trendline breaks down sharply.",
+      "subject": "trader_silhouette",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "divergent_breakdown",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "pull_out",
+        "intensity": 0.4,
+        "lens_mm": 50,
+        "depth_of_field": "shallow",
+        "stabilisation": "smooth"
+      },
+      "lighting": {
+        "key": "rim_light",
+        "contrast": "extreme",
+        "colour_temp_k": 5600
+      },
+      "palette": [
+        "#050505",
+        "#18181b",
+        "#ef4444",
+        "#cbd5e1"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "transition_out": {
+        "type": "dissolve",
+        "duration_s": 0.3
+      },
+      "on_screen_text": [
+        {
+          "text": "INHERITING ONE PERSON'S BLIND SPOTS",
+          "at_s": 9.5,
+          "until_s": 13.5,
+          "style": "caption_bold",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "low_drone",
+          "at_s": 8.8,
+          "gain_db": -10.0
+        }
+      ]
+    },
+    {
+      "id": "s05",
+      "beat": "mechanism",
+      "start_s": 14.6,
+      "duration_s": 3.2,
+      "description": "Data stream visualization: thousands of signals from social feeds clustering into node clusters.",
+      "subject": "abstract_market_data",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "sentiment_clustering",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "push_in",
+        "intensity": 0.3,
+        "lens_mm": 50,
+        "depth_of_field": "deep",
+        "stabilisation": "smooth"
+      },
+      "lighting": {
+        "key": "ambient",
+        "contrast": "high",
+        "colour_temp_k": 7000
+      },
+      "palette": [
+        "#050505",
+        "#0a0a0a",
+        "#22d3ee",
+        "#e0f2fe"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "dissolve",
+        "duration_s": 0.3
+      },
+      "transition_out": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "on_screen_text": [
+        {
+          "text": "WE READ ALL OF THEM",
+          "at_s": 15.0,
+          "until_s": 17.2,
+          "style": "caption_bold",
+          "position": "center"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "data_sweep",
+          "at_s": 14.6,
+          "gain_db": -6.0
+        }
+      ]
+    },
+    {
+      "id": "s06",
+      "beat": "mechanism",
+      "start_s": 17.8,
+      "duration_s": 3.2,
+      "description": "Multi-agent consensus engine interface highlights agreement threshold across platforms.",
+      "subject": "typography_card",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "consensus_matrix",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "static",
+        "intensity": 0.0,
+        "lens_mm": 85,
+        "depth_of_field": "medium",
+        "stabilisation": "locked"
+      },
+      "lighting": {
+        "key": "practical_cyan",
+        "contrast": "high",
+        "colour_temp_k": 6500
+      },
+      "palette": [
+        "#050505",
+        "#111827",
+        "#34d399",
+        "#22d3ee"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "transition_out": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "on_screen_text": [
+        {
+          "text": "AI AGENT CONSENSUS",
+          "at_s": 18.0,
+          "until_s": 20.5,
+          "style": "display_black",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "subtle_blip",
+          "at_s": 18.0,
+          "gain_db": -12.0
+        }
+      ]
+    },
+    {
+      "id": "s07",
+      "beat": "mechanism",
+      "start_s": 21.0,
+      "duration_s": 3.1,
+      "description": "Consensus card locks into place displaying ticker, entry level, two targets, two stops.",
+      "subject": "chart_detail",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "trade_setup_card",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "push_in",
+        "intensity": 0.2,
+        "lens_mm": 50,
+        "depth_of_field": "deep",
+        "stabilisation": "smooth"
+      },
+      "lighting": {
+        "key": "practical_cyan",
+        "contrast": "extreme",
+        "colour_temp_k": 6500
+      },
+      "palette": [
+        "#050505",
+        "#0a0a0a",
+        "#22d3ee",
+        "#f8fafc"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "transition_out": {
+        "type": "dissolve",
+        "duration_s": 0.3
+      },
+      "on_screen_text": [
+        {
+          "text": "ENTRY. TARGETS. STOPS.",
+          "at_s": 21.5,
+          "until_s": 23.8,
+          "style": "caption_bold",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "lock_click",
+          "at_s": 21.2,
+          "gain_db": -4.0
+        }
+      ]
+    },
+    {
+      "id": "s08",
+      "beat": "proof",
+      "start_s": 24.1,
+      "duration_s": 3.1,
+      "description": "Public track-record feed showing chronological calls with timestamped entry and final outcome.",
+      "subject": "chart_detail",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "public_record_feed",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "static",
+        "intensity": 0.0,
+        "lens_mm": 50,
+        "depth_of_field": "deep",
+        "stabilisation": "locked"
+      },
+      "lighting": {
+        "key": "ambient",
+        "contrast": "high",
+        "colour_temp_k": 6500
+      },
+      "palette": [
+        "#050505",
+        "#09090b",
+        "#34d399",
+        "#f4f4f5"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "dissolve",
+        "duration_s": 0.3
+      },
+      "transition_out": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "on_screen_text": [
+        {
+          "text": "EVERY CALL PUBLISHED",
+          "at_s": 24.5,
+          "until_s": 26.8,
+          "style": "caption_bold",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "page_turn",
+          "at_s": 24.1,
+          "gain_db": -9.0
+        }
+      ]
+    },
+    {
+      "id": "s09",
+      "beat": "proof",
+      "start_s": 27.2,
+      "duration_s": 3.0,
+      "description": "Grid of resolved predictions displaying wins and misses transparently in public ledger.",
+      "subject": "typography_card",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "transparent_ledger",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "push_in",
+        "intensity": 0.25,
+        "lens_mm": 50,
+        "depth_of_field": "medium",
+        "stabilisation": "smooth"
+      },
+      "lighting": {
+        "key": "screen_glow",
+        "contrast": "high",
+        "colour_temp_k": 7000
+      },
+      "palette": [
+        "#050505",
+        "#0a0a0a",
+        "#22d3ee",
+        "#34d399"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "transition_out": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "on_screen_text": [
+        {
+          "text": "WINS AND MISSES IN PUBLIC",
+          "at_s": 27.5,
+          "until_s": 29.8,
+          "style": "caption_bold",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "synth_swell",
+          "at_s": 27.2,
+          "gain_db": -6.0
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "beat": "objection",
+      "start_s": 30.2,
+      "duration_s": 2.8,
+      "description": "Bold kinetic typography on deep black background reframing guru promises.",
+      "subject": "typography_card",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "no_guru_statement",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "static",
+        "intensity": 0.0,
+        "lens_mm": 85,
+        "depth_of_field": "deep",
+        "stabilisation": "locked"
+      },
+      "lighting": {
+        "key": "none",
+        "contrast": "extreme",
+        "colour_temp_k": 6500
+      },
+      "palette": [
+        "#050505",
+        "#18181b",
+        "#fbbf24",
+        "#fafafa"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "transition_out": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "on_screen_text": [
+        {
+          "text": "NO GURU SECRETS",
+          "at_s": 30.5,
+          "until_s": 32.5,
+          "style": "display_black",
+          "position": "center"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "impact_thud",
+          "at_s": 30.2,
+          "gain_db": -5.0
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "beat": "objection",
+      "start_s": 33.0,
+      "duration_s": 2.9,
+      "description": "Compliance disclosure card: clear educational disclaimer text against dark slate surface.",
+      "subject": "typography_card",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "risk_disclosure_card",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "static",
+        "intensity": 0.0,
+        "lens_mm": 50,
+        "depth_of_field": "deep",
+        "stabilisation": "locked"
+      },
+      "lighting": {
+        "key": "ambient",
+        "contrast": "medium",
+        "colour_temp_k": 6500
+      },
+      "palette": [
+        "#050505",
+        "#0f172a",
+        "#94a3b8",
+        "#f8fafc"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "transition_out": {
+        "type": "dissolve",
+        "duration_s": 0.3
+      },
+      "on_screen_text": [
+        {
+          "text": "Trading involves significant risk. Informational and educational only. Not financial advice.",
+          "at_s": 33.1,
+          "until_s": 35.8,
+          "style": "legal_disclaimer",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": []
+    },
+    {
+      "id": "s12",
+      "beat": "cta",
+      "start_s": 35.9,
+      "duration_s": 6.1,
+      "description": "CrowdWisdomTrading logo lockup with glowing cyan underline and landing URL.",
+      "subject": "typography_card",
+      "asset": {
+        "kind": "generated_chart",
+        "ref": "brand_cta_lockup",
+        "source": "internal"
+      },
+      "camera": {
+        "move": "push_in",
+        "intensity": 0.2,
+        "lens_mm": 50,
+        "depth_of_field": "medium",
+        "stabilisation": "smooth"
+      },
+      "lighting": {
+        "key": "practical_cyan",
+        "contrast": "high",
+        "colour_temp_k": 7000
+      },
+      "palette": [
+        "#050505",
+        "#0a0a0a",
+        "#22d3ee",
+        "#ffffff"
+      ],
+      "composition": {
+        "framing": "centre",
+        "text_safe_area": {
+          "top": 0.15,
+          "bottom": 0.25
+        }
+      },
+      "transition_in": {
+        "type": "dissolve",
+        "duration_s": 0.3
+      },
+      "transition_out": {
+        "type": "cut",
+        "duration_s": 0.0
+      },
+      "on_screen_text": [
+        {
+          "text": "COLLECTIVE INTELLIGENCE FOR TRADERS",
+          "at_s": 36.2,
+          "until_s": 41.5,
+          "style": "display_black",
+          "position": "center"
+        },
+        {
+          "text": "crowdwisdomtrading.com",
+          "at_s": 38.0,
+          "until_s": 41.5,
+          "style": "url_subheading",
+          "position": "lower_third"
+        }
+      ],
+      "sfx": [
+        {
+          "ref": "resolve_chord",
+          "at_s": 35.9,
+          "gain_db": -4.0
+        }
+      ]
+    }
+  ],
+  "voiceover": {
+    "voice_id": "en-US-AndrewNeural",
+    "full_text": "Too many voices. Every day, thousands of traders post their read on the same five tickers — and every one of them is certain. So which one is right? Following one analyst means inheriting one person's blind spots. You cannot see the disagreement, because you are only reading one side of it. We read all of them. Thousands of professional traders across YouTube, Reddit and X, analysed by AI agents, distilled into the consensus that actually holds — with the entry, the targets and the stops written down. And here is the part nobody else does. Every single call is published, with its outcome. The wins and the misses. You can read the whole record before you pay us anything. That is what intelligence looks like when it is not a secret. Collective intelligence for traders.",
+    "segments": [
+      {
+        "shot_id": "s01",
+        "text": "Too many voices.",
+        "start_s": 0.2,
+        "end_s": 3.2
+      },
+      {
+        "shot_id": "s02",
+        "text": "",
+        "start_s": 3.4,
+        "end_s": 3.4
+      },
+      {
+        "shot_id": "s03",
+        "text": "Every day, thousands of traders post their read on the same five tickers — and every one of them is certain. So which one is right?",
+        "start_s": 3.6,
+        "end_s": 8.6
+      },
+      {
+        "shot_id": "s04",
+        "text": "Following one analyst means inheriting one person's blind spots. You cannot see the disagreement, because you are only reading one side of it.",
+        "start_s": 9.0,
+        "end_s": 14.4
+      },
+      {
+        "shot_id": "s05",
+        "text": "We read all of them.",
+        "start_s": 14.8,
+        "end_s": 17.5
+      },
+      {
+        "shot_id": "s06",
+        "text": "Thousands of professional traders across YouTube, Reddit and X, analysed by AI agents, distilled into the consensus that actually holds",
+        "start_s": 17.9,
+        "end_s": 20.8
+      },
+      {
+        "shot_id": "s07",
+        "text": "— with the entry, the targets and the stops written down.",
+        "start_s": 21.2,
+        "end_s": 23.9
+      },
+      {
+        "shot_id": "s08",
+        "text": "And here is the part nobody else does. Every single call is published, with its outcome. The wins and the misses.",
+        "start_s": 24.3,
+        "end_s": 27.0
+      },
+      {
+        "shot_id": "s09",
+        "text": "You can read the whole record before you pay us anything.",
+        "start_s": 27.4,
+        "end_s": 30.0
+      },
+      {
+        "shot_id": "s10",
+        "text": "That is what intelligence looks like when it is not a secret.",
+        "start_s": 30.4,
+        "end_s": 32.8
+      },
+      {
+        "shot_id": "s11",
+        "text": "",
+        "start_s": 33.0,
+        "end_s": 33.0
+      },
+      {
+        "shot_id": "s12",
+        "text": "Collective intelligence for traders.",
+        "start_s": 36.2,
+        "end_s": 41.5
+      }
+    ],
+    "total_words": 154,
+    "words_per_minute": 220
+  },
+  "music": {
+    "asset_ref": "tension_bed_90bpm",
+    "intensity_curve": [
+      {
+        "at_s": 0.0,
+        "level": 0.2
+      },
+      {
+        "at_s": 14.6,
+        "level": 0.55
+      },
+      {
+        "at_s": 24.1,
+        "level": 0.75
+      },
+      {
+        "at_s": 35.9,
+        "level": 0.4
+      }
+    ],
+    "riser_at_s": [
+      14.2,
+      23.6
+    ],
+    "resolve_at_s": 24.1,
+    "duck_under_vo": true
+  },
+  "compliance": {
+    "risk_disclosure_present": true,
+    "risk_disclosure_shot_id": "s11",
+    "risk_disclosure_text": "Trading involves significant risk. Informational and educational only. Not financial advice.",
+    "safe_harbour_duration_s": 3.0,
+    "methodology_adjacent": false,
+    "claims_checked": true,
+    "prohibited_facts_absent": true
+  },
+  "generation": {
+    "variants_written": 3,
+    "variants": [
+      {
+        "angle": "pain",
+        "judge_score": 7.6,
+        "beats_stolen_from": []
+      },
+      {
+        "angle": "unique_data",
+        "judge_score": 8.8,
+        "beats_stolen_from": [
+          "pain"
+        ]
+      },
+      {
+        "angle": "crowd_effect",
+        "judge_score": 7.9,
+        "beats_stolen_from": [
+          "pain",
+          "crowd_effect"
+        ]
+      }
+    ],
+    "winner": "unique_data",
+    "revision_rounds": 1,
+    "creative_scores": {
+      "hook_strength": 9.1,
+      "mechanism_clarity": 8.8,
+      "proof_credibility": 9.0,
+      "emotional_arc": 7.9,
+      "brand_fit": 9.2,
+      "compliance_safety": 9.0,
+      "weighted_mean": 8.83,
+      "threshold": 8.0,
+      "verdict": "pass"
+    },
+    "claims_rewrite_rounds": 1
+  },
+  "validation_context": {
+    "median_beat_timeline": [
+      {
+        "beat": "hook",
+        "start_s": 0.0,
+        "end_s": 3.4,
+        "tolerance_s": 1.2
+      },
+      {
+        "beat": "problem",
+        "start_s": 3.4,
+        "end_s": 8.8,
+        "tolerance_s": 2.0
+      },
+      {
+        "beat": "agitation",
+        "start_s": 8.8,
+        "end_s": 14.6,
+        "tolerance_s": 2.4
+      },
+      {
+        "beat": "mechanism",
+        "start_s": 14.6,
+        "end_s": 24.1,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "proof",
+        "start_s": 24.1,
+        "end_s": 30.2,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "objection",
+        "start_s": 30.2,
+        "end_s": 35.9,
+        "tolerance_s": 3.0
+      },
+      {
+        "beat": "cta",
+        "start_s": 35.9,
+        "end_s": 42.0,
+        "tolerance_s": 3.0
+      }
+    ],
+    "prohibited_facts": [
+      {
+        "fact": "74.1% of tracked directions hit",
+        "reason": "Unverifiable. Appears as 73%, 73.8% and 74.1% on the product's own site. The track-record page and /api/predictions that would substantiate it both return HTTP 404 as of 2026-09-26.",
+        "rule": "Must never appear in any generated script, in any form, including paraphrases and rounded variants."
+      },
+      {
+        "fact": "16,564 professional traders tracked",
+        "reason": "Self-reported with no published counting or de-duplication methodology.",
+        "rule": "May not be stated as a verified fact. If used, it must be attributed to the company ('the company says it tracks...') or avoided."
+      },
+      {
+        "fact": "Institutional sentiment feature",
+        "reason": "No methodology or data source disclosed anywhere.",
+        "rule": "May not be described or implied in creative."
+      }
+    ]
+  }
+}

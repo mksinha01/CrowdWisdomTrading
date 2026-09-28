@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "window": {
+    "start": "2026-08-28",
+    "end": "2026-09-27"
+  },
+  "angles": {
+    "pain": {
+      "angle": "pain",
+      "claims": [
+        {
+          "text": "Retail traders experience decision fatigue with multiple signal providers.",
+          "source_url": "https://example.com/pain-article",
+          "source_title": "Trading Fatigue",
+          "published_date": "2026-09-10",
+          "provider": "tavily",
+          "confidence": 0.85
+        }
+      ],
+      "synthesis": "Self-directed retail traders suffer paralysis when signals conflict.",
+      "search_queries_used": [
+        "retail trader signal overload",
+        "trading signal fatigue 2026",
+        "following too many analysts",
+        "trader decision paralysis"
+      ]
+    },
+    "unique_data": {
+      "angle": "unique_data",
+      "claims": [
+        {
+          "text": "Every call provides entry, stops, targets, and transparent outcomes. (undated)",
+          "source_url": "https://crowdwisdomtrading.com/",
+          "source_title": "CrowdWisdomTrading",
+          "published_date": null,
+          "provider": "exa",
+          "confidence": 0.54
+        }
+      ],
+      "synthesis": "Transparent process with public record of calls and outcomes.",
+      "search_queries_used": [
+        "crowdwisdomtrading predictions track record",
+        "crowdwisdomtrading transparency",
+        "published trading calls with outcomes"
+      ]
+    },
+    "crowd_effect": {
+      "angle": "crowd_effect",
+      "claims": [
+        {
+          "text": "Aggregated independent forecasts outperform individual domain experts.",
+          "source_url": "https://example.com/tetlock-paper",
+          "source_title": "Superforecasting Research",
+          "published_date": "2026-09-05",
+          "provider": "tavily",
+          "confidence": 0.88
+        }
+      ],
+      "synthesis": "Aggregation of diverse forecasters yields higher calibration than single gurus.",
+      "search_queries_used": [
+        "wisdom of crowds forecast accuracy",
+        "superforecaster aggregation",
+        "Tetlock superforecasters",
+        "information cascades herding traders"
+      ]
+    }
+  },
+  "product": {
+    "name": "CrowdWisdomTrading",
+    "tagline": "Collective Intelligence for Traders",
+    "legal_entity": "Tsuroni LTD",
+    "landing_url": "https://crowdwisdomtrading.com/",
+    "landing_url_verified_200": false,
+    "markets": [
+      "US stocks",
+      "crypto",
+      "forex",
+      "commodities"
+    ],
+    "pricing": [
+      {
+        "tier": "Weekly CrowdWisdom",
+        "price": "$0",
+        "period": "free"
+      },
+      {
+        "tier": "Pro Access",
+        "price": "$29.99",
+        "period": "month"
+      },
+      {
+        "tier": "Pay As You Go",
+        "price": "$9.99",
+        "period": "per 10-credit pack"
+      }
+    ],
+    "explicit_disclaimers": {
+      "not_copy_trading": true,
+      "not_algo_trading": true,
+      "not_personalised_advice": true,
+      "no_position_access": true,
+      "note": "The product's own FAQ states they do not have access to traders' positions."
+    },
+    "brand": {
+      "background": "#050505",
+      "surface": "#0a0a0a",
+      "primary_accent": "#22d3ee",
+      "secondary_accents": [
+        "#fb923c",
+        "#fbbf24",
+        "#818cf8",
+        "#fb7185"
+      ],
+      "success": "#34d399",
+      "text": "#cbd5e1",
+      "mood": "dark terminal aesthetic, cyan-led, gradient-filled display numerals"
+    }
+  },
+  "prohibited_facts": [
+    {
+      "fact": "74.1% of tracked directions hit",
+      "reason": "Unverifiable. Appears as 73%, 73.8% and 74.1% on the product's own site. The track-record page and /api/predictions that would substantiate it both return HTTP 404 as of 2026-09-26.",
+      "rule": "Must never appear in any generated script, in any form, including paraphrases and rounded variants."
+    },
+    {
+      "fact": "16,564 professional traders tracked",
+      "reason": "Self-reported with no published counting or de-duplication methodology.",
+      "rule": "May not be stated as a verified fact. If used, it must be attributed to the company ('the company says it tracks...') or avoided."
+    },
+    {
+      "fact": "Institutional sentiment feature",
+      "reason": "No methodology or data source disclosed anywhere.",
+      "rule": "May not be described or implied in creative."
+    },
+    {
+      "fact": "Guaranteed 100% win rate on all market regimes",
+      "reason": "Unsubstantiated marketing claim",
+      "rule": "Must never appear in any generated script."
+    }
+  ]
+}

@@ -361,16 +361,20 @@ def check_claims(
                     "fix": f.fix,
                 })
 
-    # 2. Run LLM Judge
-    llm_judge_response = _run_async(
-        _run_llm_judge(
-            settings=settings,
-            paths=paths,
-            script=script_text_for_judge,
-            stage=stage,
-            client=client,
+    # 2. Run LLM Judge (skipped when client is None — offline replay is
+    # deterministic-only; the LLM is a soft second opinion, never the hard gate).
+    if client is None:
+        llm_judge_response = ClaimsJudgeResponse(findings=[], overall="pass")
+    else:
+        llm_judge_response = _run_async(
+            _run_llm_judge(
+                settings=settings,
+                paths=paths,
+                script=script_text_for_judge,
+                stage=stage,
+                client=client,
+            )
         )
-    )
 
     # 3. Adjudicate findings according to Rule C1:
     # - A hard finding from deterministic is final and cannot be de-escalated.

@@ -1,0 +1,26 @@
+{
+  "angle": "unique_data",
+  "claims": [
+    {
+      "text": "Every call provides entry, stops, targets, and transparent outcomes. (undated)",
+      "source_url": "https://crowdwisdomtrading.com/",
+      "source_title": "CrowdWisdomTrading",
+      "published_date": null,
+      "provider": "exa",
+      "confidence": 0.54
+    }
+  ],
+  "synthesis": "Transparent process with public record of calls and outcomes.",
+  "search_queries_used": [
+    "crowdwisdomtrading predictions track record",
+    "crowdwisdomtrading transparency",
+    "published trading calls with outcomes"
+  ],
+  "prohibited_facts_found": [
+    {
+      "fact": "Guaranteed 100% win rate on all market regimes",
+      "reason": "Unsubstantiated marketing claim",
+      "rule": "Must never appear in any generated script."
+    }
+  ]
+}

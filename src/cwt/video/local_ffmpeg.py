@@ -199,7 +199,7 @@ def build_shot_argv(
     if audio_rel is not None:
         argv.extend(["-map", "1:a"])
 
-    argv.extend(["-c:v", "libx264", "-preset", "medium", "-crf", "19"])
+    argv.extend(["-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p"])
     if audio_rel is not None:
         argv.extend(["-c:a", "aac", "-b:a", "192k"])
 
@@ -325,7 +325,7 @@ def concat_clips(
 
     if n == 1:
         argv.extend([
-            "-c:v", "libx264", "-preset", "medium", "-crf", "19",
+            "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p",
             "-an", out_rel,
         ])
         return run_tool(argv, cwd=paths.render, timeout_s=600, check=False)
@@ -393,7 +393,7 @@ def concat_clips(
     argv.extend([
         "-filter_complex", filtergraph,
         "-map", "[v]",
-        "-c:v", "libx264", "-preset", "medium", "-crf", "19",
+        "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p",
         "-an",
         out_rel,
     ])
