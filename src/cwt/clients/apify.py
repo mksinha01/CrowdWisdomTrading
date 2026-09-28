@@ -376,11 +376,15 @@ async def _run_actor_single(
     headers = {"Authorization": f"Bearer {token}"}
     start_url = f"{BASE}/acts/{actor}/runs?maxTotalChargeUsd={max_charge_usd}"
 
+    payload = dict(actor_input)
+    if not cache.offline and payload.get("activeStatus") == "Active":
+        payload["activeStatus"] = "active"
+
     # maxTotalChargeUsd is Apify's own HARD CAP on a single run (Rule A2)
     resp = await cache.request(
         "POST",
         start_url,
-        json_body=actor_input,
+        json_body=payload,
         headers=headers,
         timeout=60.0,
     )
@@ -433,17 +437,32 @@ async def _run_actor_single(
             await asyncio.sleep(poll_interval_s)
 
     if status != "SUCCEEDED":
-        raise ApifyError(f"Apify run {run_id} ended {status}")
-
-    # Fetch dataset items
-    items_url = f"{BASE}/datasets/{dataset_id}/items?format=json&clean=true"
-    items_resp = await cache.request("GET", items_url, headers=headers)
-    if items_resp.status_code >= 400:
-        raise ApifyError(
-            f"Apify fetch dataset {dataset_id} failed with status {items_resp.status_code}"
-        )
-
-    items = items_resp.body if isinstance(items_resp.body, list) else []
+        if status == "ABORTED":
+            items_url = f"{BASE}/datasets/{dataset_id}/items?format=json&clean=true"
+            items_resp = await cache.request("GET", items_url, headers=headers)
+            items = items_resp.body if (items_resp.status_code < 400 and isinstance(items_resp.body, list)) else []
+            status_msg = str(status_data.get("statusMessage", ""))
+            is_cost_cap = (
+                "maximum cost" in status_msg.lower() or "charge" in status_msg.lower() or "cost" in status_msg.lower()
+            )
+            if is_cost_cap and len(items) > 0:
+                logger.warning(
+                    "Apify run %s hit maximum cost cap ($%.2f) with %d items collected; proceeding with available items.",
+                    run_id, max_charge_usd, len(items)
+                )
+            else:
+                raise ApifyError(f"Apify run {run_id} ended {status}: {status_msg}")
+        else:
+            raise ApifyError(f"Apify run {run_id} ended {status}")
+    else:
+        # Fetch dataset items
+        items_url = f"{BASE}/datasets/{dataset_id}/items?format=json&clean=true"
+        items_resp = await cache.request("GET", items_url, headers=headers)
+        if items_resp.status_code >= 400:
+            raise ApifyError(
+                f"Apify fetch dataset {dataset_id} failed with status {items_resp.status_code}"
+            )
+        items = items_resp.body if isinstance(items_resp.body, list) else []
 
     # Re-fetch run detail for usageTotalUsd
     detail_resp = await cache.request("GET", status_url, headers=headers)

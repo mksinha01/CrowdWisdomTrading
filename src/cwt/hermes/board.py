@@ -86,13 +86,14 @@ def seed(
     ids: dict[str, str] = {}
     for card in topo_sort(spec):
         parent_ids = [ids[p] for p in card.parents]
+        body_text = render_body(card, run_id, run_dir, board)
         args = [
             "create",
             card.title,
             "--assignee",
             card.assignee,
-            "--body",
-            render_body(card, run_id, run_dir, board),
+            "--body-file",
+            "-",
             "--idempotency-key",
             f"{run_id}:{card.key}",
             "--json",
@@ -108,7 +109,7 @@ def seed(
         if card.goal:
             args += ["--goal", "--goal-max-turns", "20"]
 
-        result = kanban(*args, board=board, timeout_s=60)
+        result = kanban(*args, board=board, timeout_s=60, input=body_text)
         if not result.ok:
             raise RuntimeError(
                 f"Failed to create card {card.key!r}:\n{result.stderr[-2000:]}\n"

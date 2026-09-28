@@ -27,7 +27,14 @@ class HermesResult:
         return self.returncode == 0
 
     def json(self):
-        return json.loads(self.stdout)
+        try:
+            return json.loads(self.stdout)
+        except Exception:
+            import re
+            m = re.search(r"Created\s+(t_[0-9a-fA-F]+)", self.stdout)
+            if m:
+                return {"id": m.group(1)}
+            raise
 
 
 @lru_cache(maxsize=1)
@@ -47,10 +54,10 @@ def hermes_bin() -> str:
 
 
 def run_hermes(args: list[str], *, timeout_s: float = DEFAULT_TIMEOUT,
-               check: bool = False) -> HermesResult:
+               check: bool = False, input: str | None = None) -> HermesResult:
     if isinstance(args, str):
         raise TypeError("run_hermes() takes a list, not a shell string (Rule W1)")
-    result = run_tool([hermes_bin(), *args], timeout_s=timeout_s)
+    result = run_tool([hermes_bin(), *args], timeout_s=timeout_s, input=input)
     out = HermesResult(result.returncode, result.stdout, result.stderr)
     if check and not out.ok:
         raise ToolFailed(result)
@@ -61,8 +68,9 @@ def hermes_version() -> str:
     return run_hermes(["--version"], timeout_s=30).stdout.strip()
 
 
-def kanban(*args: str, board: str, timeout_s: float = DEFAULT_TIMEOUT) -> HermesResult:
-    return run_hermes(["kanban", "--board", board, *args], timeout_s=timeout_s)
+def kanban(*args: str, board: str, timeout_s: float = DEFAULT_TIMEOUT,
+           input: str | None = None) -> HermesResult:
+    return run_hermes(["kanban", "--board", board, *args], timeout_s=timeout_s, input=input)
 
 
 def supported_flags() -> set[str]:
