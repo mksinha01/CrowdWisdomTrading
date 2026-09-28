@@ -48,3 +48,14 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+# Marker hygiene (S35 build step 6). Mark anything that needs a resource the
+# default run does not have:
+#   pytest -m "not ffmpeg"    # a machine without ffmpeg
+#   pytest -m "not network"   # an air-gapped machine
+# The default `pytest` run needs NO network (the offline contract) but does
+# need ffmpeg, because the end-to-end proof renders a real video.
+markers = [
+    "network: requires network access or a live API (deselect with -m \"not network\")",
+    "ffmpeg: requires a working ffmpeg binary on this machine",
+    "hermes: requires a live Hermes gateway, dashboard or installed profiles",
+]

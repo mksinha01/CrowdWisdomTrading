@@ -1,6 +1,55 @@
 CWT Video Ads Agent
 Copyright (c) 2026 CrowdWisdomTrading
 
-Third-Party Licenses and Notices:
-- Python packages and dependencies licensed under their respective terms as declared in requirements.txt.
-- OpenMontage adapter: OpenMontage is AGPL-3.0 licensed. We invoke it strictly as an external, separate process without vendoring or modifying its source code.
+This software is licensed under the MIT License. See LICENSE for details.
+
+================================================================================
+THIRD-PARTY LICENSES AND NOTICES
+================================================================================
+
+This project integrates with or makes reference to several third-party libraries
+and tools:
+
+1. Hermes Agent (Nous Research)
+   License: MIT
+   https://github.com/NousResearch/hermes-agent
+   Autonomous agent framework, kanban task board, and execution harness.
+
+2. HyperFrames
+   License: Apache-2.0
+   HTML/CSS/Canvas-authored cinematic video compositions and rendering.
+
+3. imageio-ffmpeg
+   License: BSD 2-Clause
+   FFmpeg binary discovery and packaging wrapper for reproducible media operations.
+
+4. edge-tts
+   License: LGPL-3.0
+   Microsoft Edge Speech synthesis interface for voiceover generation.
+
+5. Piper (rhasspy/piper)
+   License: MIT
+   Fast, local neural text-to-speech engine.
+
+6. Python Runtime Dependencies
+   The packages specified in requirements.txt and requirements-dev.txt are
+   distributed under their respective permissive licenses (including MIT,
+   Apache-2.0, BSD, and PSF).
+
+================================================================================
+AGPL-3.0 ARCHITECTURAL ISOLATION NOTICE: OpenMontage Adapter
+================================================================================
+
+This repository includes an optional adapter for OpenMontage (GNU AGPL-3.0).
+Our integration is strictly isolated to prevent any license entanglement:
+
+1. Process-level boundary: OpenMontage is invoked solely as an external,
+   independent subprocess via system execution, exchanging only standard CLI
+   arguments and consuming only its output media file.
+2. No vendoring: No OpenMontage source code, modules, or binary artifacts are
+   vendored, included, modified, or distributed in this repository.
+3. Best-effort and non-dependent: OpenMontage is strictly optional and best-effort.
+   The core pipeline never requires or depends on OpenMontage; rendering always
+   reliably degrades along the video backend chain to guaranteed local FFmpeg.
+4. Clean architectural boundary: The adapter boundary is strictly confined to
+   src/cwt/video/openmontage.py and communicates through standard file paths only.

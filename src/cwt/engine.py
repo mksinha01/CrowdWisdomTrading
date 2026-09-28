@@ -40,7 +40,7 @@ import json
 import os
 import shutil
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -103,8 +103,12 @@ async def run_pipeline(
 ) -> dict:
     """Run the full pipeline end to end.
 
-    Returns {"done": int, "skipped": int, "cost_usd": float, "output": str,
+    Returns {"done": int, "executed": int, "skipped": int, "failed": int,
+             "total": int, "cost_usd": float, "output": str,
              "stages": [StageResult]}.
+
+    ``done`` is ``executed + skipped`` — the §13.3 display contract. A stage
+    replayed from a valid artifact counts as done; only ``failed`` stages do not.
     """
     force_stage = list(force_stage or [])
     if engine not in ("hermes", "local"):
@@ -124,8 +128,14 @@ async def run_pipeline(
             settings, paths, offline=offline, record_pacing=record_pacing, force_stage=force_stage
         )
 
-    done = sum(1 for s in stages if s.status == "ok")
+    executed = sum(1 for s in stages if s.status == "ok")
     skipped = sum(1 for s in stages if s.status == "skipped")
+    failed = sum(1 for s in stages if s.status == "failed")
+    # "done" counts every stage that COMPLETED — executed or replayed from a
+    # valid artifact. The display contract is §13.3's "Done. 11 stages", which
+    # must read the same for a fresh offline run and for an all-skipped resume
+    # (§9.6: "Done. 11 stages, $0.0000 (every stage skipped)").
+    done = executed + skipped
     cost_usd = _ledger_cost_usd(paths, offline=offline)
 
     output = str(paths.render / "final.mp4")
@@ -134,7 +144,10 @@ async def run_pipeline(
 
     return {
         "done": done,
+        "executed": executed,
         "skipped": skipped,
+        "failed": failed,
+        "total": len(STAGE_ORDER),
         "cost_usd": cost_usd,
         "output": output,
         "stages": stages,
@@ -410,10 +423,11 @@ async def _run_stage_local(
         return await _run_compliance_stage(settings, paths, client)
 
     if key == "render":
+        # Offline must not reach for edge_tts (it is a network backend) or for
+        # a Piper voice file that may not be on disk. Settings is a frozen
+        # dataclass, so this is dataclasses.replace — NOT pydantic model_copy.
         tts_settings = (
-            settings.model_copy(update={"tts_backend_chain": ["silent"]})
-            if offline
-            else settings
+            replace(settings, tts_backend_chain=["silent"]) if offline else settings
         )
         video.synthesize_voiceover(settings=tts_settings, paths=paths)
         render_res = video.render_video(settings=settings, paths=paths)

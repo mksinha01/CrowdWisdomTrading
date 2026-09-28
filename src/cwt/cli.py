@@ -71,7 +71,17 @@ async def _cmd_run(args: argparse.Namespace) -> int:
 
     if getattr(args, "resume", False):
         from cwt.hermes.board import resume
-        resume(run_id, settings.board)
+        try:
+            resume(run_id, settings.board)
+        except Exception as exc:  # noqa: BLE001
+            # --resume unblocks cards on the Hermes board. With no board — the
+            # local engine, or a machine without the hermes binary — there is
+            # nothing to unblock: the stage cache (ArtifactStore.get_if_valid)
+            # already makes a re-run idempotent. Degrade, don't crash.
+            console.print(
+                f"[yellow]--resume: no Hermes board ({type(exc).__name__}); "
+                "relying on the stage cache for idempotency.[/yellow]"
+            )
 
     if getattr(args, "engine", "hermes") == "hermes" and not getattr(args, "offline", False):
         pass  # doctor has already verified the gateway is reachable
@@ -91,6 +101,20 @@ async def _cmd_run(args: argparse.Namespace) -> int:
         console.print(f"[red]{name}: {exc}[/red]")
         return {"PipelineTimeout": EXIT_TIMEOUT, "PipelineBlocked": EXIT_BLOCKED,
                 "BudgetExceeded": EXIT_BUDGET}.get(name, EXIT_CONFIG)
+
+    failed = [s for s in summary.get("stages", []) if s.status == "failed"]
+    if failed:
+        # Never print "Done." for a run that did not finish. Exit 0 + "Done."
+        # here is how a reviewer concludes the render worked when it did not —
+        # the same failure mode Rule V3 guards against for a 0-byte file.
+        for stage in failed:
+            console.print(f"[red]FAILED[/red] {stage.key}: {stage.error}")
+        console.print(
+            f"[red]Pipeline stopped.[/red] {summary.get('done', 0)} of "
+            f"{summary.get('total', summary.get('done', 0))} stages completed, "
+            f"{len(failed)} failed."
+        )
+        return EXIT_CONFIG
 
     console.print(f"[bold green]Done.[/bold green] {summary['done']} stages, "
                   f"${summary['cost_usd']:.4f}, output: {summary['output']}")

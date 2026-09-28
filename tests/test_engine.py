@@ -32,6 +32,7 @@ from cwt.engine import (
     _run_hermes,
     _run_local,
     _run_research_block,
+    _run_stage_local,
     _stage_is_valid,
     run_pipeline,
 )
@@ -149,7 +150,12 @@ async def test_fully_cached_run_returns_all_skipped_and_zero_cost(tmp_path: Path
     )
     assert summary["cost_usd"] == 0.0
     assert summary["skipped"] == 11
-    assert summary["done"] == 0
+    # §13.3's display contract: a replayed stage still counts as done, so a
+    # fully-cached run reports the same "11 stages" as a fresh one.
+    assert summary["done"] == 11
+    assert summary["executed"] == 0
+    assert summary["failed"] == 0
+    assert summary["total"] == 11
     assert len(summary["stages"]) == 11
     assert all(isinstance(s, StageResult) and s.status == "skipped" for s in summary["stages"])
 
@@ -347,3 +353,60 @@ async def test_run_local_research_block_runs_once_not_thrice(
     assert count["n"] == 3, f"expected 3 research calls, got {count['n']}"
     research_keys = [s.key for s in stages if s.key.startswith("res_")]
     assert research_keys == ["res_pain", "res_unique", "res_crowd"]
+
+
+@pytest.mark.asyncio
+async def test_offline_render_stage_forces_silent_tts_chain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Regression (S35): the offline render stage must force the silent TTS backend.
+
+    ``edge_tts`` is a network backend, so an offline run must not reach for it.
+    The original code expressed that as ``settings.model_copy(...)`` — but
+    ``Settings`` is a frozen *dataclass*, not a pydantic model. It raised
+    ``AttributeError: 'Settings' object has no attribute 'model_copy'``, the
+    render stage failed, and ``cwt run --engine local --offline`` exited 0
+    having produced no video at all. Exactly what the offline gate exists to catch.
+    """
+    paths = RunPaths(tmp_path / "run-silent-tts").ensure()
+    settings = _settings()
+    cache = _build_cache(paths, True)
+
+    seen: list[list[str]] = []
+
+    def fake_synth(*, settings: Settings, paths: RunPaths) -> dict[str, Any]:
+        seen.append(list(settings.tts_backend_chain))
+        return {
+            "artifact_path": str(paths.artifacts / "voiceover.json"),
+            "backend_used": "silent",
+            "duration_s": 42.0,
+            "words": 10,
+            "chain_tried": [],
+            "has_audio": False,
+        }
+
+    def fake_render(
+        *, settings: Settings, paths: RunPaths, backend: str | None = None
+    ) -> dict[str, Any]:
+        return {
+            "artifact_path": str(paths.artifacts / "render_manifest.json"),
+            "output": str(paths.render / "final.mp4"),
+            "backend_used": "local_ffmpeg",
+            "duration_s": 42.0,
+            "width": 1080,
+            "height": 1920,
+            "chain_tried": [],
+            "assets": 0,
+        }
+
+    monkeypatch.setattr("cwt.tools.video.synthesize_voiceover", fake_synth)
+    monkeypatch.setattr("cwt.tools.video.render_video", fake_render)
+
+    await _run_stage_local("render", settings, paths, None, cache, True)
+    assert seen == [["silent"]], "offline render did not pin the TTS chain to silent"
+
+    # The live path must leave the operator's configured chain untouched.
+    seen.clear()
+    await _run_stage_local("render", settings, paths, None, cache, False)
+    assert seen == [list(settings.tts_backend_chain)]
+    assert settings.tts_backend_chain != ["silent"]

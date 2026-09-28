@@ -21,6 +21,7 @@ from cwt.cli import (
 )
 from cwt.clients.llm import BudgetExceeded
 from cwt.config import Settings
+from cwt.engine import StageResult
 from cwt.doctor import (
     Check,
     Report,
@@ -365,10 +366,35 @@ async def test_cmd_run_exit_codes(dummy_settings: Settings):
             assert code == EXIT_CONFIG
 
         # 5. Success -> 0
-        summary = {"done": 12, "cost_usd": 0.1234, "output": "runs/test_run/render/final.mp4"}
+        summary = {
+            "done": 12,
+            "executed": 12,
+            "skipped": 0,
+            "failed": 0,
+            "total": 12,
+            "cost_usd": 0.1234,
+            "output": "runs/test_run/render/final.mp4",
+            "stages": [],
+        }
         with patch("cwt.engine.run_pipeline", new=AsyncMock(return_value=summary)):
             code = await _cmd_run(args)
             assert code == EXIT_OK
+
+        # 6. A failed stage must NOT report success (S35: the offline gate once
+        #    exited 0 with "Done. 0 stages" and no video at all).
+        failed_summary = {
+            "done": 8,
+            "executed": 0,
+            "skipped": 8,
+            "failed": 1,
+            "total": 11,
+            "cost_usd": 0.0,
+            "output": "runs/test_run/submission",
+            "stages": [StageResult("render", "failed", None, 0.1, "boom")],
+        }
+        with patch("cwt.engine.run_pipeline", new=AsyncMock(return_value=failed_summary)):
+            code = await _cmd_run(args)
+            assert code == EXIT_CONFIG
 
 
 @pytest.mark.asyncio
@@ -384,7 +410,16 @@ async def test_cmd_run_resume_calls_board_resume(dummy_settings: Settings):
         force_stage=[],
     )
 
-    summary = {"done": 12, "cost_usd": 0.0, "output": "runs/test_resume/render/final.mp4"}
+    summary = {
+        "done": 12,
+        "executed": 12,
+        "skipped": 0,
+        "failed": 0,
+        "total": 12,
+        "cost_usd": 0.0,
+        "output": "runs/test_resume/render/final.mp4",
+        "stages": [],
+    }
     with patch("cwt.config.Settings.from_env", return_value=dummy_settings), \
          patch("cwt.hermes.board.resume") as mock_resume, \
          patch("cwt.cli._banner"), \

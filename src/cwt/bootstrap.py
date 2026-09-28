@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import os
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -14,6 +13,7 @@ import yaml  # type: ignore[import-untyped]
 
 from .config import Settings
 from .hermes.dag import DAG_SPEC
+from .util.subproc import run_tool
 
 PROFILE_NAMES = [
     "cwt-orchestrator",
@@ -322,19 +322,19 @@ def create_profiles(*, hermes_home: Path, names: list[str]) -> list[str]:
         if profile_dir.exists():
             # Profile already exists, not an error (idempotent)
             continue
+        # Rule §8.1: every external process goes through util/subproc.run_tool,
+        # which is where the Windows .cmd-shim (W4) and utf-8 (W7) fixes live.
         try:
-            subprocess.run(
-                [hermes_bin, "profile", "create", name],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
+            result = run_tool([hermes_bin, "profile", "create", name], timeout_s=120)
+        except Exception as e:
+            raise RuntimeError(f"Failed to create profile {name}: {e}") from e
+        if result.ok:
             created.append(name)
-        except subprocess.CalledProcessError as e:
-            # If profile exists, that's fine
-            if "already exists" in e.stderr.lower() or profile_dir.exists():
-                continue
-            raise RuntimeError(f"Failed to create profile {name}: {e.stderr}") from e
+            continue
+        # If the profile already exists, that's fine.
+        if "already exists" in result.stderr.lower() or profile_dir.exists():
+            continue
+        raise RuntimeError(f"Failed to create profile {name}: {result.stderr}")
 
     return created
 

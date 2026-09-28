@@ -7,21 +7,13 @@ Write-Host "=== CWT Video Ads Agent — bootstrap ===" -ForegroundColor Cyan
 
 # 1. Python version gate
 $py = (Get-Command python -ErrorAction SilentlyContinue).Source
-if (-not $py) {
-    # Check py launcher
-    $pyLauncher = (Get-Command py -ErrorAction SilentlyContinue).Source
-    if ($pyLauncher) {
-        $py = "py"
-    } else {
-        throw "python not found on PATH. Install Python 3.11+ from python.org."
-    }
-}
-$ver = (& $py -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+if (-not $py) { throw "python not found on PATH. Install Python 3.11+ from python.org." }
+$ver = (python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 if ([version]$ver -lt [version]"3.11") { throw "Python $ver found; 3.11+ required." }
 Write-Host "  python $ver  $py" -ForegroundColor Green
 
 # 2. venv
-if (-not (Test-Path ".venv")) { & $py -m venv .venv }
+if (-not (Test-Path ".venv")) { python -m venv .venv }
 & .\.venv\Scripts\python.exe -m pip install --upgrade pip --quiet
 & .\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt --quiet
 & .\.venv\Scripts\python.exe -m pip install -e . --quiet

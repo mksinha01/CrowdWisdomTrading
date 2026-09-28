@@ -491,9 +491,21 @@ def check_claims(
         stage_reports=stage_reports,
     )
 
-    # Write stage-specific file and primary claims_report.json
+    # Write stage-specific file and primary claims_report.json.
+    #
+    # Provenance MUST record the storyboard as the input, and must record
+    # exactly that one label: ArtifactStore.get_if_valid() compares the stored
+    # input dict to the requested one with ==, and the engine declares
+    # {"storyboard": ...} for the compliance stage (engine._stage_inputs).
+    # Recording nothing (`inputs=None`) made every claims_report look stale, so
+    # the compliance stage re-executed on every re-run and §9.6's "every stage
+    # skipped, $0.0000" promise failed.
     this_stage_file.write_text(report.model_dump_json(indent=2), encoding="utf-8")
-    store.write("claims_report", report)
+    store.write(
+        "claims_report",
+        report,
+        inputs={"storyboard": paths.artifacts / "storyboard.json"},
+    )
 
     # Update other stage file if it exists so both reference each other
     if other_stage_file.exists():

@@ -12,7 +12,18 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from cwt.config import Settings
-from cwt.domain.models import Camera, Lighting, Shot, Storyboard
+from cwt.domain.models import (
+    AssetRef,
+    BeatName,
+    Camera,
+    Composition,
+    Lighting,
+    Shot,
+    Storyboard,
+    SubjectName,
+    Transition,
+    TransitionName,
+)
 from cwt.util.subproc import ToolFailed, ToolNotFound, ToolResult
 from cwt.video import (
     CINEMATIC_GRADE,
@@ -158,6 +169,122 @@ def test_build_shot_filter_whip_pan() -> None:
     # sweep = 0.5 * 1080 * 0.35 = 189.0; sweep / width = 0.175
     assert "crop=1080:1920:x='(iw-1080)*t/2.000*0.175':y=0" in f
     assert f.endswith(f"{CINEMATIC_GRADE}[out]")
+
+
+# ---------------------------------------------------------------------------
+# Golden strings for all FOUR camera moves (S35 build step 5)
+#
+# build_shot_filter is the only non-trivial pure function in the renderer, and
+# every camera move takes a different branch through it. These four strings are
+# the frozen contract: a change to any of them changes the video.
+# ---------------------------------------------------------------------------
+
+# Dark + accented (validator 7), 6500K so no colorbalance, "high" contrast.
+_GOLDEN_PALETTE = ["#050505", "#1a1a1a", "#ef4444", "#22d3ee"]
+_GOLDEN_GRADE = "eq=contrast=1.10:saturation=0.92"
+_GOLDEN_HEAD = (
+    "[in]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920"
+)
+_GOLDEN_TAIL = f"{_GOLDEN_GRADE},{CINEMATIC_GRADE}[out]"
+_ZOOMPAN = (
+    ":x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30"
+)
+
+
+def _golden_shot(move: str, intensity: float, duration_s: float) -> Shot:
+    return Shot(
+        id="sX",
+        beat=BeatName.HOOK,
+        start_s=0.0,
+        duration_s=duration_s,
+        description="golden",
+        subject=SubjectName.ABSTRACT_MARKET_DATA,
+        asset=AssetRef(kind="gen", ref="golden", source="internal"),
+        camera=Camera(
+            move=move,
+            intensity=intensity,
+            lens_mm=50,
+            depth_of_field="deep",
+            stabilisation="locked",
+        ),
+        lighting=Lighting(key="none", contrast="high", colour_temp_k=6500),
+        palette=_GOLDEN_PALETTE,
+        composition=Composition(framing="centre", text_safe_area={"top": 0.15, "bottom": 0.25}),
+        transition_in=Transition(type=TransitionName.CUT, duration_s=0.0),
+        transition_out=Transition(type=TransitionName.CUT, duration_s=0.0),
+    )
+
+
+@pytest.mark.parametrize(
+    "move, intensity, duration_s, expected",
+    [
+        # static: no zoompan at all. The shot is still graded and cropped.
+        (
+            "static",
+            0.0,
+            4.0,
+            f"{_GOLDEN_HEAD},{_GOLDEN_TAIL}",
+        ),
+        # push_in: rate = 0.30 * 0.6 / 4.0 / 30 = 0.001500, 120 frames.
+        (
+            "push_in",
+            0.6,
+            4.0,
+            f"{_GOLDEN_HEAD},"
+            f"zoompan=z='min(zoom+0.001500,1.35)':d=120{_ZOOMPAN}"
+            f",{_GOLDEN_TAIL}",
+        ),
+        # pull_out: rate = 0.30 * 0.5 / 3.0 / 30 = 0.001667, 90 frames.
+        (
+            "pull_out",
+            0.5,
+            3.0,
+            f"{_GOLDEN_HEAD},"
+            f"zoompan=z='if(lte(zoom,1.0),1.35,max(1.001,zoom-0.001667))':d=90{_ZOOMPAN}"
+            f",{_GOLDEN_TAIL}",
+        ),
+        # whip_pan: no zoompan; a crop x-sweep instead.
+        # sweep = clamp(0.5,0.1,1.0) * 1080 * 0.35 = 189.0; 189.0/1080 = 0.175
+        (
+            "whip_pan",
+            0.5,
+            2.0,
+            f"{_GOLDEN_HEAD},"
+            f"crop=1080:1920:x='(iw-1080)*t/2.000*0.175':y=0,"
+            f"{_GOLDEN_TAIL}",
+        ),
+    ],
+)
+def test_all_four_camera_moves_golden(
+    move: str, intensity: float, duration_s: float, expected: str
+) -> None:
+    shot = _golden_shot(move, intensity, duration_s)
+    got = build_shot_filter(
+        shot, input_label="in", output_label="out", fps=30, width=1080, height=1920
+    )
+    assert got == expected
+
+    # static and whip_pan must never emit a zoompan filter.
+    if move in ("static", "whip_pan"):
+        assert "zoompan" not in got
+    else:
+        assert "zoompan" in got
+
+
+def test_all_four_camera_moves_are_distinct() -> None:
+    """A move that produces another move's filtergraph is not a camera move."""
+    rendered = {
+        move: build_shot_filter(
+            _golden_shot(move, 0.5, 3.0),
+            input_label="in",
+            output_label="out",
+            fps=30,
+            width=1080,
+            height=1920,
+        )
+        for move in ("static", "push_in", "pull_out", "whip_pan")
+    }
+    assert len(set(rendered.values())) == 4, rendered
 
 
 def test_all_fixture_shots_filtergraph_rules() -> None:
