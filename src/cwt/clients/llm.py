@@ -142,11 +142,15 @@ def extract_json(raw: str) -> Any:
 def schema_instruction(schema: type[BaseModel]) -> str:
     """Layer 2 of JSON enforcement. ALWAYS applied, even when the provider has
     native JSON mode — it measurably improves field-level accuracy."""
+    schema_dict = schema.model_json_schema()
+    if "properties" in schema_dict:
+        schema_dict["properties"].pop("validation_context", None)
+        schema_dict["properties"].pop("warnings", None)
     return (
         "Return ONLY a single JSON object. No prose, no markdown fences, no commentary.\n"
         "It must validate against this JSON Schema. Every `required` field must be present.\n"
         "Use null for unknown optional values — never omit a key, never invent one.\n\n"
-        + json.dumps(schema.model_json_schema(), indent=2)
+        + json.dumps(schema_dict, indent=2)
     )
 
 
@@ -305,10 +309,24 @@ class LLMClient:
                 last_error = exc
                 if attempt == max_repairs:
                     break
+                was_truncated = result.completion_tokens >= max_tokens
+                if was_truncated and isinstance(exc, UnparseableJson):
+                    repair_msg = (
+                        "Your previous response was cut off because it exceeded the maximum token limit. "
+                        "Return ONLY the complete valid JSON object. Keep descriptions concise and focused "
+                        "so the complete JSON object fits within the response limit."
+                    )
+                    assistant_content = (
+                        result.text[:1000] + "\n... [TRUNCATED DUE TO TOKEN LIMIT]"
+                    )
+                else:
+                    repair_msg = self._repair_instruction(exc, schema)
+                    assistant_content = result.text
+
                 convo = [
                     *convo,
-                    {"role": "assistant", "content": result.text},
-                    {"role": "user", "content": self._repair_instruction(exc, schema)},
+                    {"role": "assistant", "content": assistant_content},
+                    {"role": "user", "content": repair_msg},
                 ]
                 logger.warning(
                     "stage=%s repair %d/%d: %s",

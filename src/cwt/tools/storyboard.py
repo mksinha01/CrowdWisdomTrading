@@ -376,8 +376,22 @@ def generate_hook_candidates(
     RETURNS {"artifact_path","candidates":int,"selected_id","archetypes_covered":[...],
              "underused_boosted":[...]}
     """
-    artifact = _run_async(_generate_hook_candidates(settings, paths, client=client))
     store = ArtifactStore(paths, run_id=paths.run_dir.name)
+    try:
+        existing = store.read("hook_candidates")
+        winner = next((c for c in existing.candidates if c.selected), None)
+        if winner is not None:
+            return {
+                "artifact_path": str(store.path_for("hook_candidates")),
+                "candidates": len(existing.candidates),
+                "selected_id": winner.id,
+                "archetypes_covered": existing.archetypes_covered,
+                "underused_boosted": existing.underused_archetypes_boosted,
+            }
+    except Exception:
+        pass
+
+    artifact = _run_async(_generate_hook_candidates(settings, paths, client=client))
     artifact_path = store.write("hook_candidates", artifact)
 
     winner = next(c for c in artifact.candidates if c.selected)
@@ -460,18 +474,42 @@ async def _write_storyboard_variant(
     beat_timeline_str = _format_median_beat_timeline(median_beats)
     prohibited_str = _format_prohibited_facts(prohibited_facts)
     shot_schema_str = json.dumps(Shot.model_json_schema(), indent=2)
-    storyboard_schema_str = json.dumps(Storyboard.model_json_schema(), indent=2)
+    sb_schema = Storyboard.model_json_schema()
+    if "properties" in sb_schema:
+        sb_schema["properties"].pop("validation_context", None)
+        sb_schema["properties"].pop("warnings", None)
+    storyboard_schema_str = json.dumps(sb_schema, indent=2)
 
     brief_str = (
         brief.model_dump_json(indent=2)
         if hasattr(brief, "model_dump_json")
         else json.dumps(brief, indent=2)
     )
-    patterns_str = (
-        patterns.model_dump_json(indent=2)
-        if hasattr(patterns, "model_dump_json")
-        else json.dumps(patterns, indent=2)
-    )
+    if isinstance(patterns, str):
+        patterns_str = patterns
+    elif hasattr(patterns, "aggregate") and hasattr(patterns, "patterns"):
+        compact_patterns = {
+            "aggregate": (
+                patterns.aggregate.model_dump()
+                if hasattr(patterns.aggregate, "model_dump")
+                else patterns.aggregate
+            ),
+            "sample_winning_patterns": [
+                p.model_dump() if hasattr(p, "model_dump") else p
+                for p in patterns.patterns[:3]
+            ],
+        }
+        patterns_str = json.dumps(compact_patterns, indent=2)
+    elif isinstance(patterns, dict) and "patterns" in patterns:
+        compact_patterns = {
+            "aggregate": patterns.get("aggregate", {}),
+            "sample_winning_patterns": patterns.get("patterns", [])[:3],
+        }
+        patterns_str = json.dumps(compact_patterns, indent=2)
+    elif hasattr(patterns, "model_dump_json"):
+        patterns_str = patterns.model_dump_json(indent=2)
+    else:
+        patterns_str = json.dumps(patterns, indent=2)
     hook_str = (
         hook.model_dump_json(indent=2)
         if hasattr(hook, "model_dump_json")
@@ -500,14 +538,14 @@ async def _write_storyboard_variant(
         ],
     }
 
-    # Complete validated on STRONG tier, max_tokens=8192, retry once on validation failure
+    # Complete validated on STRONG tier, max_tokens=16384, retry once on validation failure
     try:
         storyboard = await client.complete_validated(
             tier=Tier.STRONG,
             messages=[{"role": "user", "content": prompt}],
             schema=Storyboard,
             temperature=0.2,
-            max_tokens=8192,
+            max_tokens=16384,
             stage=f"storyboard_variant_{angle}",
             validation_context=validation_ctx,
         )
@@ -522,7 +560,7 @@ async def _write_storyboard_variant(
             messages=[{"role": "user", "content": prompt}],
             schema=Storyboard,
             temperature=0.2,
-            max_tokens=8192,
+            max_tokens=16384,
             stage=f"storyboard_variant_{angle}_retry",
             validation_context=validation_ctx,
         )
@@ -578,6 +616,22 @@ def write_storyboard_variant(
     WRITES artifacts/variants/<angle>.json  (scratch)
     RETURNS {"angle","shots":int,"duration_s","valid":true,"variant_path"}
     """
+    variants_dir = paths.artifacts / "variants"
+    variant_file = variants_dir / f"{angle}.json"
+    if variant_file.is_file():
+        try:
+            data = json.loads(variant_file.read_text(encoding="utf-8"))
+            sb = Storyboard.model_validate(data)
+            return {
+                "angle": angle,
+                "shots": len(sb.shots),
+                "duration_s": sb.meta.total_duration_s,
+                "valid": True,
+                "variant_path": str(variant_file),
+            }
+        except Exception:
+            pass
+
     store = ArtifactStore(paths, run_id=paths.run_dir.name)
     hook_candidates = store.read("hook_candidates")
     selected_hook = next((c for c in hook_candidates.candidates if c.id == hook_id), None)
@@ -963,44 +1017,49 @@ class RawReviewResponse(_CwtBaseModel):
         return self
 
 
-def _check_protected_fields(
+def _enforce_protected_fields(
     before: Storyboard,
     after: Storyboard,
     must_not_change: list[str],
 ) -> None:
-    """Enforce that fields listed in must_not_change are preserved exactly."""
-    violated: list[str] = []
+    """Restore protected fields on *after* from *before* so LLM drift is harmless.
+
+    Previous behaviour raised ``YourRewriteChangedProtectedFields`` which
+    crashed the pipeline when the model introduced even tiny float-rounding or
+    text-rephrasing on "do not change" fields.  Restoring in-place provides the
+    same safety guarantee without pipeline failure.
+    """
     before_dict = before.model_dump(mode="json")
-    after_dict = after.model_dump(mode="json")
 
     before_shots = {s["id"]: s for s in before_dict.get("shots", [])}
-    after_shots = {s["id"]: s for s in after_dict.get("shots", [])}
+    after_shots_by_id = {s.id: s for s in after.shots}
 
     for item in must_not_change:
         item_clean = item.strip()
         if not item_clean:
             continue
 
-        if item_clean in before_shots:
-            if item_clean not in after_shots:
-                violated.append(f"{item_clean} (deleted)")
-            elif before_shots[item_clean] != after_shots[item_clean]:
-                violated.append(item_clean)
-        elif item_clean in before_dict:
-            if before_dict[item_clean] != after_dict.get(item_clean):
-                violated.append(item_clean)
-        else:
-            if item_clean == "risk_disclosure":
-                before_disc = before_dict.get("compliance", {}).get("risk_disclosure_text")
-                after_disc = after_dict.get("compliance", {}).get("risk_disclosure_text")
-                if before_disc != after_disc:
-                    violated.append(item_clean)
+        # --- top-level model fields (e.g. "compliance") ---
+        if item_clean in before_dict and hasattr(after, item_clean):
+            original_value = getattr(before, item_clean)
+            try:
+                setattr(after, item_clean, original_value)
+            except (AttributeError, ValueError):
+                pass  # frozen sub-model; leave as-is
+            continue
 
-    if violated:
-        raise YourRewriteChangedProtectedFields(
-            f"Your rewrite changed protected fields ({', '.join(violated)}). "
-            f"Fix ONLY what was asked. Preserve everything else EXACTLY."
-        )
+        # --- shot-level protection (e.g. "visual_hook" shot id) ---
+        if item_clean in before_shots and item_clean in after_shots_by_id:
+            original_shot = next(s for s in before.shots if s.id == item_clean)
+            for idx, s in enumerate(after.shots):
+                if s.id == item_clean:
+                    after.shots[idx] = original_shot
+                    break
+            continue
+
+        # --- alias: "risk_disclosure" -> compliance.risk_disclosure_text ---
+        if item_clean == "risk_disclosure":
+            after.compliance.risk_disclosure_text = before.compliance.risk_disclosure_text
 
 
 async def _score_storyboard(
@@ -1218,13 +1277,13 @@ async def _apply_rewrite(
         messages=[{"role": "user", "content": full_prompt}],
         schema=Storyboard,
         temperature=0.2,
-        max_tokens=8192,
+        max_tokens=16384,
         stage="apply_rewrite",
         validation_context=validation_ctx,
     )
 
-    # Enforce must_not_change rule (Rule REWRITE_PROMPT / line 1459)
-    _check_protected_fields(
+    # Enforce must_not_change by restoring original values (not check-and-raise)
+    _enforce_protected_fields(
         before=storyboard,
         after=rewritten,
         must_not_change=verdict.must_not_change,

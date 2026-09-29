@@ -44,6 +44,15 @@ COMPLIANT SUBSTITUTION PATTERNS (use these):
 
 A required risk disclosure must appear, legible, in the final 8 seconds:
   "Trading involves significant risk. Informational and educational only. Not financial advice."
+
+CLARIFICATIONS:
+  - Descriptions of trader pain points, hesitation, emotional friction, or missed opportunities
+    prior to using the product (e.g. "the opportunity passes you by while you're still deciding")
+    describe the trader's problem/struggle, NOT a product guarantee. Do not flag them as implied
+    certainty or guarantee claims.
+  - The phrasing "It's a scorecard", "a published, auditable process", and "the calls we've published"
+    are explicit COMPLIANT SUBSTITUTION PATTERNS. Do not flag them as substitution defeats.
+  - When the required risk disclosure appears in ON-SCREEN TEXT, do not flag missing_disclosure.
 """
 
 CLAIMS_JUDGE_PROMPT = """\

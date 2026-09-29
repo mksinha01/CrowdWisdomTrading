@@ -346,7 +346,30 @@ def check_claims(
             else:
                 transcript = ""
 
-        script_text_for_judge = transcript or ""
+        script_parts: list[str] = []
+        if transcript:
+            script_parts.append(f"VOICEOVER:\n{transcript}")
+
+        ost_lines: list[str] = []
+        try:
+            sb_data = store.read("storyboard")
+            storyboard = (
+                sb_data if isinstance(sb_data, Storyboard) else Storyboard.model_validate(sb_data)
+            )
+            if storyboard.visual_hook and storyboard.visual_hook.text_overlay:
+                ost_lines.append(f"[visual_hook] {storyboard.visual_hook.text_overlay}")
+            if storyboard.shots:
+                for shot in storyboard.shots:
+                    for ost in shot.on_screen_text:
+                        if ost.text:
+                            ost_lines.append(f"[{shot.id}] {ost.text}")
+        except Exception:
+            pass
+
+        if ost_lines:
+            script_parts.append("ON-SCREEN TEXT:\n" + "\n".join(ost_lines))
+
+        script_text_for_judge = "\n\n".join(script_parts) if script_parts else (transcript or "")
 
         if transcript:
             findings = detect_claims(transcript) + scan_prohibited_facts(transcript, prohibited)

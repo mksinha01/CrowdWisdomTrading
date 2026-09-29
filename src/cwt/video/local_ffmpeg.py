@@ -344,16 +344,19 @@ def concat_clips(
         TransitionName.FLASH_WHITE: "fade",
         TransitionName.WIPELEFT:    "wipeleft",
         TransitionName.WIPERIGHT:   "wiperight",
-        TransitionName.ZOOMBLUR:    "zoomblur",
+        TransitionName.ZOOMBLUR:    "zoomin",
     }
 
     filter_parts: list[str] = []
-    curr_label = "[0:v]"
+    fps = settings.video_fps or 30
+    for i in range(n):
+        filter_parts.append(f"[{i}:v]fps={fps},settb=AVTB,format=yuv420p[v_in{i}]")
+    curr_label = "[v_in0]"
     cumulative_end: float = clip_durations[0]
     has_xfade = _ffmpeg_has_xfade(exe)
 
     for i in range(n - 1):
-        next_input = f"[{i + 1}:v]"
+        next_input = f"[v_in{i + 1}]"
         is_final = (i == n - 2)
         out_label = "[v]" if is_final else f"[vx{i}]"
 
@@ -375,15 +378,17 @@ def concat_clips(
         if has_xfade and t_name != TransitionName.CUT and t_dur > 0.0:
             offset = max(0.0, cumulative_end - t_dur)
             xfade_name = xfade_map.get(t_name, "dissolve")
+            if xfade_name == "zoomblur":
+                xfade_name = "zoomin"
             f = (
                 f"{curr_label}{next_input}"
-                f"xfade=transition={xfade_name}:duration={t_dur:.3f}:offset={offset:.3f}"
-                f"{out_label}"
+                f"xfade=transition={xfade_name}:duration={t_dur:.3f}:offset={offset:.3f},"
+                f"settb=AVTB{out_label}"
             )
             filter_parts.append(f)
             cumulative_end += clip_durations[i + 1] - t_dur  # xfade shortens total
         else:
-            f = f"{curr_label}{next_input}concat=n=2:v=1:a=0{out_label}"
+            f = f"{curr_label}{next_input}concat=n=2:v=1:a=0,settb=AVTB{out_label}"
             filter_parts.append(f)
             cumulative_end += clip_durations[i + 1]
 
@@ -636,9 +641,14 @@ def write_render_manifest(
     music_assets: list[dict] = []
     asset_ref = storyboard.music.asset_ref
     for mc in [
-        paths.assets / f"{asset_ref}.mp3",
         paths.assets / f"{asset_ref}.wav",
+        paths.assets / f"{asset_ref}.mp3",
+        paths.cache / f"{asset_ref}.wav",
         paths.cache / f"{asset_ref}.mp3",
+        Path("fixtures/assets/music") / f"{asset_ref}.wav",
+        Path("fixtures/assets/music") / f"{asset_ref}.mp3",
+        Path("fixtures/assets") / f"{asset_ref}.wav",
+        Path("fixtures/assets") / f"{asset_ref}.mp3",
     ]:
         if mc.exists():
             music_assets.append({
@@ -688,6 +698,7 @@ class LocalFfmpegBackend:
     def available(self) -> Availability:
         """Available iff ffmpeg resolves AND has libx264 + aac + zoompan."""
         try:
+            ffmpeg_path()
             exe = self.settings.ffmpeg_bin or ffmpeg_path()
         except Exception as exc:
             return Availability(available=False, reason=f"ffmpeg binary not found: {exc}")
@@ -776,6 +787,12 @@ class LocalFfmpegBackend:
             )
 
         # ── Step 1: Render each shot ──────────────────────────────────────────
+        from cwt.clients.http_cache import HttpCache
+        from cwt.video.assets import AssetSourcer
+
+        cache = HttpCache(paths.cache, offline=True)
+        sourcer = AssetSourcer(paths=paths, settings=self.settings, cache=cache)
+
         sample_png = Path("fixtures/assets/sample.png")
         sample_asset: Path | None = sample_png.resolve() if sample_png.exists() else None
 
@@ -783,30 +800,65 @@ class LocalFfmpegBackend:
         active_shots = [s for s in storyboard.shots if s.duration_s > 0.0]
         for shot in active_shots:
             clip_path = paths.render / f"shot_{shot.id}.mp4"
+            if clip_path.exists() and clip_path.stat().st_size > 0:
+                try:
+                    p = _probe(clip_path)
+                    if p.duration_s > 0:
+                        shot_clip_paths.append((shot.id, clip_path))
+                        continue
+                except Exception:
+                    pass
 
-            asset_ref_str = (
-                shot.asset.get("ref", "") if isinstance(shot.asset, dict) else ""
-            )
-            candidate = paths.assets / f"{asset_ref_str}.png"
-            if candidate.exists():
-                asset_path = candidate
-            elif sample_asset and sample_asset.exists():
-                asset_path = sample_asset
-            else:
-                placeholder = paths.assets / "placeholder.png"
-                if not placeholder.exists():
-                    placeholder.parent.mkdir(parents=True, exist_ok=True)
-                    run_tool(
-                        [exe, "-y", "-f", "lavfi",
-                         "-i", (
-                             f"color=c=black:"
-                             f"size={self.settings.video_width}"
-                             f"x{self.settings.video_height}:rate=1"
-                         ),
-                         "-vframes", "1", str(placeholder)],
-                        timeout_s=30, check=False,
-                    )
-                asset_path = placeholder
+            asset_path: Path | None = None
+            try:
+                rec = sourcer.resolve(shot.asset, shot)
+                if rec and rec.path and Path(rec.path).exists():
+                    asset_path = Path(rec.path)
+            except Exception:
+                pass
+
+            if asset_path is None or not asset_path.exists():
+                asset_ref_str = getattr(shot.asset, "ref", None) or (
+                    shot.asset.get("ref", "") if isinstance(shot.asset, dict) else ""
+                )
+                candidates = [
+                    paths.assets / "generated" / f"{asset_ref_str}.png",
+                    paths.assets / "generated" / f"{shot.id}.png",
+                    Path("fixtures/assets/stills") / f"{asset_ref_str}.png",
+                    paths.assets / f"{asset_ref_str}.png",
+                ]
+                for cand in candidates:
+                    if cand.exists():
+                        asset_path = cand
+                        break
+
+            if asset_path is None or not asset_path.exists():
+                try:
+                    gen_path = paths.assets / "generated" / f"{shot.id}.png"
+                    sourcer.generate(shot, gen_path)
+                    if gen_path.exists():
+                        asset_path = gen_path
+                except Exception:
+                    pass
+
+            if asset_path is None or not asset_path.exists():
+                if sample_asset and sample_asset.exists():
+                    asset_path = sample_asset
+                else:
+                    placeholder = paths.assets / "placeholder.png"
+                    if not placeholder.exists():
+                        placeholder.parent.mkdir(parents=True, exist_ok=True)
+                        run_tool(
+                            [exe, "-y", "-f", "lavfi",
+                             "-i", (
+                                 f"color=c=black:"
+                                 f"size={self.settings.video_width}"
+                                 f"x{self.settings.video_height}:rate=1"
+                             ),
+                             "-vframes", "1", str(placeholder)],
+                            timeout_s=30, check=False,
+                        )
+                    asset_path = placeholder
 
             caption: str | None = None
             if voiceover.audio_path is None:
@@ -855,9 +907,13 @@ class LocalFfmpegBackend:
         music_asset_path: Path | None = None
         asset_ref = storyboard.music.asset_ref
         for mc in [
-            paths.assets / f"{asset_ref}.mp3",
             paths.assets / f"{asset_ref}.wav",
+            paths.assets / f"{asset_ref}.mp3",
+            paths.cache / f"{asset_ref}.wav",
             paths.cache / f"{asset_ref}.mp3",
+            Path("fixtures/assets/music") / f"{asset_ref}.wav",
+            Path("fixtures/assets/music") / f"{asset_ref}.mp3",
+            Path("fixtures/assets") / f"{asset_ref}.wav",
             Path("fixtures/assets") / f"{asset_ref}.mp3",
         ]:
             if mc.exists():

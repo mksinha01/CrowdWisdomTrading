@@ -113,7 +113,7 @@ class TestSeed:
         """Returns a side_effect function that gives each card a unique fake id."""
         call_counter = {"n": 0}
 
-        def side_effect(*args, board, timeout_s=60):
+        def side_effect(*args, board, timeout_s=60, **kwargs):
             call_counter["n"] += 1
             fake_id = f"card-{call_counter['n']:03d}"
             return _ok(json.dumps({"id": fake_id}))
@@ -164,7 +164,7 @@ class TestSeed:
         run_id = "idempotent-run"
         fake_ids: dict[str, str] = {}
 
-        def side_effect(*args, board, timeout_s=60):
+        def side_effect(*args, board, timeout_s=60, **kwargs):
             # Extract the idempotency key to return a stable id
             try:
                 idx = args.index("--idempotency-key")

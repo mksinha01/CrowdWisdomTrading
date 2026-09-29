@@ -83,6 +83,10 @@ WRITING RULES:
   strawman it.
 - Narration for a {duration_s}-second ad is roughly {word_budget} words. Do not exceed it.
 - On-screen text is NOT a transcript. It is 2-5 words that land the beat's idea.
+- Exactly 10-12 shots total (do not exceed 12 shots).
+- Keep shot descriptions crisp and visual (1-2 sentences). Do not write essay-length scene descriptions.
+- Keep visual_hook alternatives_considered to at most 3 items with 1-sentence rejection reasons.
+- Do NOT output 'validation_context' or 'warnings' keys; these are populated automatically.
 
 COMPLIANCE — the following are ABSOLUTELY PROHIBITED and will be machine-checked:
 {prohibited}

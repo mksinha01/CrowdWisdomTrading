@@ -22,6 +22,7 @@ import concurrent.futures
 import hashlib
 import json
 import logging
+import math
 import os
 import sys
 import time
@@ -588,22 +589,29 @@ def qa_check(
             f"Dimensions {width}x{height} do not match required {settings.video_width}x{settings.video_height}"
         )
 
-    # 4. Loudness checks (when audio present)
-    has_audio = media_facts["audio_codec"] is not None or integrated_lufs is not None
+    # 4. Loudness checks (when audio present and not silent)
+    is_silent = (
+        integrated_lufs is None
+        or math.isinf(integrated_lufs)
+        or integrated_lufs <= -70.0
+    )
+    has_audio = (media_facts["audio_codec"] is not None or integrated_lufs is not None) and not is_silent
     if has_audio:
-        if integrated_lufs is not None:
+        if integrated_lufs is not None and not math.isinf(integrated_lufs):
             dev = abs(integrated_lufs - settings.video_loudness_lufs)
             if dev > 1.0:
                 errors.append(
                     f"Integrated loudness {integrated_lufs:.1f} LUFS deviates from target "
                     f"{settings.video_loudness_lufs:.1f} LUFS by {dev:.2f} LU (max tolerance 1.0 LU)"
                 )
-        if true_peak_dbtp is not None:
+        if true_peak_dbtp is not None and not math.isinf(true_peak_dbtp):
             ceiling = settings.video_true_peak_dbtp + 0.5
             if true_peak_dbtp > ceiling:
                 errors.append(
                     f"True peak {true_peak_dbtp:.1f} dBTP exceeds ceiling {ceiling:.1f} dBTP"
                 )
+    elif is_silent and media_facts["audio_codec"] is not None:
+        warnings.append("Audio track is silent (captions-only path); loudness check skipped.")
 
     # 5. Risk disclosure duration recomputed from render_manifest.shots[] (Rule C3)
     manifest_path = paths.artifacts / "render_manifest.json"

@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping, Sequence
@@ -41,6 +42,7 @@ class ToolResult:
     returncode: int
     stdout: str
     stderr: str
+    elapsed_s: float = 0.0
 
     @property
     def ok(self) -> bool:
@@ -98,6 +100,7 @@ def run_tool(
     if env_extra:
         env.update(env_extra)
 
+    t0 = time.monotonic()
     try:
         proc = subprocess.run(
             argv,
@@ -124,12 +127,14 @@ def run_tool(
         )
         raise ToolTimeout(exe, timeout_s, stdout, stderr) from exc
 
+    elapsed = time.monotonic() - t0
     result = ToolResult(
         args=argv,
         cwd=str(cwd) if cwd else None,
         returncode=proc.returncode,
         stdout=proc.stdout,
         stderr=proc.stderr,
+        elapsed_s=round(elapsed, 3),
     )
     if check and not result.ok:
         raise ToolFailed(result)

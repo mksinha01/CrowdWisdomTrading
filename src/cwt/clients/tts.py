@@ -305,6 +305,51 @@ def _synthesize_piper(
     return out_audio, transcript, words, duration_s
 
 
+def _is_sapi_available() -> tuple[bool, str]:
+    import sys
+    if sys.platform != "win32":
+        return False, "SAPI only available on Windows"
+    return True, ""
+
+
+def _synthesize_sapi(
+    text: str,
+    out_dir: Path,
+    settings: Settings,
+    declared_duration_s: float,
+) -> tuple[Path, str, list[WordTiming], float]:
+    """Synthesize voiceover using Windows SAPI (System.Speech.Synthesis)."""
+    out_audio = out_dir / "vo.wav"
+    txt_path = out_dir / "vo_script.txt"
+    txt_path.write_text(text, encoding="utf-8")
+
+    ps_code = (
+        "Add-Type -AssemblyName System.Speech;\n"
+        "$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer;\n"
+        f"$synth.SetOutputToWaveFile('{out_audio.as_posix()}');\n"
+        f"$txt = [System.IO.File]::ReadAllText('{txt_path.as_posix()}', [System.Text.Encoding]::UTF8);\n"
+        "$synth.Speak($txt);\n"
+        "$synth.Dispose();\n"
+    )
+    ps_script = out_dir / "run_sapi.ps1"
+    ps_script.write_text(ps_code, encoding="utf-8")
+
+    run_tool(
+        ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(ps_script)],
+        cwd=out_dir,
+        timeout_s=60.0,
+    )
+    if not out_audio.is_file() or out_audio.stat().st_size == 0:
+        raise RuntimeError("Windows SAPI failed to produce voiceover audio")
+
+    duration_s = _get_audio_duration(out_audio, settings.ffprobe_bin)
+    if duration_s is None or duration_s <= 0.0:
+        duration_s = declared_duration_s if declared_duration_s > 0 else 0.0
+
+    words = estimate_word_timings(text, duration_s)
+    return out_audio, text, words, duration_s
+
+
 def _synthesize_silent(
     text: str,
     declared_duration_s: float,
@@ -441,7 +486,75 @@ async def synthesize_voiceover(
                 })
                 continue
 
+        elif backend == "sapi":
+            avail, reason = _is_sapi_available()
+            if not avail:
+                chain_tried.append({
+                    "backend": "sapi",
+                    "available": False,
+                    "attempted": False,
+                    "reason": reason,
+                })
+                continue
+
+            try:
+                audio_path, transcript, words, duration_s = _synthesize_sapi(
+                    effective_text, out_dir, settings, declared_duration_s
+                )
+                elapsed = time.monotonic() - t0
+                chain_tried.append({
+                    "backend": "sapi",
+                    "available": True,
+                    "attempted": True,
+                    "succeeded": True,
+                    "elapsed_s": round(elapsed, 4),
+                })
+                return VoiceoverResult(
+                    audio_path=audio_path,
+                    transcript=transcript,
+                    words=words,
+                    duration_s=duration_s,
+                    backend_used="sapi",
+                    chain_tried=chain_tried,
+                )
+            except Exception as exc:
+                elapsed = time.monotonic() - t0
+                logger.warning("sapi backend failed: %s", exc)
+                chain_tried.append({
+                    "backend": "sapi",
+                    "available": True,
+                    "attempted": True,
+                    "succeeded": False,
+                    "error": str(exc),
+                    "elapsed_s": round(elapsed, 4),
+                })
+                continue
+
         elif backend == "silent":
+            sapi_avail, _ = _is_sapi_available()
+            if sapi_avail and not any(t.get("backend") == "sapi" for t in chain_tried):
+                try:
+                    sapi_audio, sapi_trans, sapi_words, sapi_dur = _synthesize_sapi(
+                        effective_text, out_dir, settings, declared_duration_s
+                    )
+                    chain_tried.append({
+                        "backend": "sapi",
+                        "available": True,
+                        "attempted": True,
+                        "succeeded": True,
+                        "elapsed_s": round(time.monotonic() - t0, 4),
+                    })
+                    return VoiceoverResult(
+                        audio_path=sapi_audio,
+                        transcript=sapi_trans,
+                        words=sapi_words,
+                        duration_s=sapi_dur,
+                        backend_used="sapi",
+                        chain_tried=chain_tried,
+                    )
+                except Exception as exc:
+                    logger.warning("sapi auto-fallback failed: %s", exc)
+
             try:
                 audio_path, transcript, words, duration_s = _synthesize_silent(
                     effective_text, declared_duration_s

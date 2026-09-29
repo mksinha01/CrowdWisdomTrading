@@ -234,6 +234,11 @@ def _stage_is_valid_inner(key: str, paths: RunPaths) -> bool:
             records = json.loads(prov_file.read_text(encoding="utf-8"))
             if not isinstance(records, list):
                 return True
+            for r in reversed(records):
+                if isinstance(r, dict) and r.get("name") == artifact_name:
+                    if r.get("inputs") == {}:
+                        return True
+                    break
             has_record = any(
                 isinstance(r, dict) and r.get("name") == artifact_name for r in records
             )
@@ -429,7 +434,8 @@ async def _run_stage_local(
         tts_settings = (
             replace(settings, tts_backend_chain=["silent"]) if offline else settings
         )
-        video.synthesize_voiceover(settings=tts_settings, paths=paths)
+        if not (paths.artifacts / "voiceover.json").is_file():
+            video.synthesize_voiceover(settings=tts_settings, paths=paths)
         render_res = video.render_video(settings=settings, paths=paths)
         return str(render_res["artifact_path"])
 

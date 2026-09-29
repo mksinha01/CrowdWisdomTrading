@@ -442,13 +442,11 @@ async def _run_actor_single(
             items_resp = await cache.request("GET", items_url, headers=headers)
             items = items_resp.body if (items_resp.status_code < 400 and isinstance(items_resp.body, list)) else []
             status_msg = str(status_data.get("statusMessage", ""))
-            is_cost_cap = (
-                "maximum cost" in status_msg.lower() or "charge" in status_msg.lower() or "cost" in status_msg.lower()
-            )
-            if is_cost_cap and len(items) > 0:
+            usage_usd = float(status_data.get("usageTotalUsd") or 0.0)
+            if len(items) > 0:
                 logger.warning(
-                    "Apify run %s hit maximum cost cap ($%.2f) with %d items collected; proceeding with available items.",
-                    run_id, max_charge_usd, len(items)
+                    "Apify run %s ended ABORTED (usage $%.4f / cap $%.2f) with %d items collected; proceeding with available items.",
+                    run_id, usage_usd, max_charge_usd, len(items)
                 )
             else:
                 raise ApifyError(f"Apify run {run_id} ended {status}: {status_msg}")

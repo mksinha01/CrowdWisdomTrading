@@ -3,8 +3,8 @@
 Covers:
 - weighted_mean matches a hand-computed value; the model's own arithmetic is ignored
 - a request_changes verdict with weakest_axes of length ≠ 2 is rejected and retried
-- must_not_change enforcement fires: a rewrite that alters visual_hook raises YourRewriteChangedProtectedFields
-- must_not_change enforcement fires: a rewrite that alters a protected shot raises YourRewriteChangedProtectedFields
+- must_not_change enforcement restores: a rewrite that alters visual_hook has it silently restored
+- must_not_change enforcement restores: a rewrite that alters a protected shot has it silently restored
 - revision_rounds increments; the storyboard still validates afterward
 - _render_storyboard_html output contains all 12 shot ids, the VO text, and no http://
 - make_contact_sheet produces a 1080×(3*cells_h + gutters) PNG with 12 cells (Pillow available, no ffmpeg in the test env)
@@ -239,11 +239,12 @@ def test_request_changes_verdict_with_invalid_weakest_axes_retries(
 # ---------------------------------------------------------------------------
 
 
-def test_must_not_change_enforcement_raises_on_altered_visual_hook(
+def test_must_not_change_enforcement_restores_visual_hook(
     test_settings: Settings, run_paths: RunPaths
 ):
-    """A rewrite that alters visual_hook when protected must raise YourRewriteChangedProtectedFields."""
+    """A rewrite that alters visual_hook when protected has it silently restored."""
     sb, _, _ = _seed_storyboard_artifacts(run_paths)
+    original_hook = sb.visual_hook.model_dump(mode="json")
 
     verdict = ReviewVerdict(
         schema_version=1,
@@ -267,17 +268,21 @@ def test_must_not_change_enforcement_raises_on_altered_visual_hook(
 
     mock_client = MockReviewClient(rewrite_responses=[mutated_sb_data])
 
-    with pytest.raises(YourRewriteChangedProtectedFields) as exc_info:
-        apply_rewrite(settings=test_settings, paths=run_paths, client=mock_client)
+    # Should NOT raise; visual_hook is restored in-place
+    result = apply_rewrite(settings=test_settings, paths=run_paths, client=mock_client)
 
-    assert "visual_hook" in str(exc_info.value)
+    # Read back the saved storyboard and verify visual_hook was restored
+    saved = store.read("storyboard")
+    saved_sb = Storyboard.model_validate(saved) if not isinstance(saved, Storyboard) else saved
+    assert saved_sb.visual_hook.model_dump(mode="json") == original_hook
 
 
-def test_must_not_change_enforcement_raises_on_altered_protected_shot(
+def test_must_not_change_enforcement_restores_protected_shot(
     test_settings: Settings, run_paths: RunPaths
 ):
-    """A rewrite that alters a shot listed in must_not_change must raise."""
+    """A rewrite that alters a shot listed in must_not_change has it silently restored."""
     sb, _, _ = _seed_storyboard_artifacts(run_paths)
+    original_s01 = sb.shots[0].model_dump(mode="json")
 
     verdict = ReviewVerdict(
         schema_version=1,
@@ -301,10 +306,14 @@ def test_must_not_change_enforcement_raises_on_altered_protected_shot(
 
     mock_client = MockReviewClient(rewrite_responses=[mutated_sb_data])
 
-    with pytest.raises(YourRewriteChangedProtectedFields) as exc_info:
-        apply_rewrite(settings=test_settings, paths=run_paths, client=mock_client)
+    # Should NOT raise; shot s01 is restored in-place
+    result = apply_rewrite(settings=test_settings, paths=run_paths, client=mock_client)
 
-    assert "s01" in str(exc_info.value)
+    # Read back the saved storyboard and verify shot s01 was restored
+    saved = store.read("storyboard")
+    saved_sb = Storyboard.model_validate(saved) if not isinstance(saved, Storyboard) else saved
+    restored_s01 = next(s for s in saved_sb.shots if s.id == "s01")
+    assert restored_s01.model_dump(mode="json") == original_s01
 
 
 # ---------------------------------------------------------------------------

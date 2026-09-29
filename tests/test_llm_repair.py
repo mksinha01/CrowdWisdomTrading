@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import httpx
 import pytest
@@ -102,6 +102,20 @@ def test_schema_instruction():
     assert "properties" in schema_dict
     assert "name" in schema_dict["properties"]
     assert "score" in schema_dict["properties"]
+
+
+class SchemaWithInternal(BaseModel):
+    title: str
+    validation_context: Optional[dict[str, Any]] = None
+    warnings: list[str] = Field(default_factory=list)
+
+
+def test_schema_instruction_strips_internal_fields():
+    instruction = schema_instruction(SchemaWithInternal)
+    schema_dict = json.loads(instruction.split("\n\n", 1)[1])
+    assert "title" in schema_dict["properties"]
+    assert "validation_context" not in schema_dict["properties"]
+    assert "warnings" not in schema_dict["properties"]
 
 
 def test_estimate_cost_known_models():
@@ -259,6 +273,56 @@ async def test_repair_loop_success_on_attempt_1(tmp_path: Path):
         assert client.last_result is not None
         assert client.last_result.repair_attempts == 1
         assert client.last_result.salvaged is False
+
+
+@pytest.mark.asyncio
+async def test_repair_loop_handles_token_truncation(tmp_path: Path):
+    """When a model's output is cut off at max_tokens, repair instruction identifies the cutoff."""
+    ledger = tmp_path / "ledger.jsonl"
+    client = LLMClient(
+        provider="openrouter",
+        api_key="test-key",
+        model_cheap="google/gemini-2.5-flash",
+        model_strong="anthropic/claude-sonnet-4.5",
+        fallbacks=[],
+        max_concurrency=4,
+        max_usd=1.0,
+        ledger_path=ledger,
+        repair_attempts=1,
+    )
+
+    with respx.mock(assert_all_called=True) as respx_mock:
+        respx_mock.post("https://openrouter.ai/api/v1/chat/completions").side_effect = [
+            # Call 0: Truncated JSON reaching max_tokens=100
+            httpx.Response(
+                200,
+                json={
+                    "choices": [{"message": {"content": '{"name": "truncated_output", "sc'}}],
+                    "usage": {"prompt_tokens": 50, "completion_tokens": 100},
+                },
+            ),
+            # Call 1 (repair 1): Model receives truncation warning and returns complete valid JSON
+            httpx.Response(
+                200,
+                json={
+                    "choices": [{"message": {"content": '{"name": "compact_ok", "score": 8.0}'}}],
+                    "usage": {"prompt_tokens": 80, "completion_tokens": 30},
+                },
+            ),
+        ]
+
+        result: SampleSchema = await client.complete_validated(
+            tier=Tier.CHEAP,
+            messages=[{"role": "user", "content": "generate item"}],
+            schema=SampleSchema,
+            max_tokens=100,
+            stage="test_truncation_repair",
+        )
+
+        assert result.name == "compact_ok"
+        assert result.score == 8.0
+        assert client.last_result is not None
+        assert client.last_result.repair_attempts == 1
 
 
 # ===========================================================================

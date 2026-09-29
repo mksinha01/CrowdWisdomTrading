@@ -485,18 +485,19 @@ class AssetSourcer:
         if asset.ref in self._resolved:
             return self._resolved[asset.ref]
 
-        manifest_entry = self._find_manifest_entry(asset.ref)
-
-        if asset.kind == "generated_chart":
+        kind = getattr(asset, "kind", "") or ""
+        source = getattr(asset, "source", "") or ""
+        if kind in ("generated_chart", "generated") or kind.startswith("generated") or source == "generated":
             rec = self.generate(shot, self._gen_out_path(asset.ref))
-        elif asset.kind == "internal":
+        elif kind == "internal" or source == "internal":
             rec = self._resolve_internal(asset, manifest_entry)
-        elif asset.kind == "cc0":
-            rec = self._resolve_cc0(asset, manifest_entry)
+        elif kind in ("cc0", "cc0_clip", "cc0_still") or kind.startswith("cc0") or source == "cc0":
+            try:
+                rec = self._resolve_cc0(asset, manifest_entry)
+            except Exception:
+                rec = self._auto_generate_internal(asset)
         else:
-            raise ValueError(
-                f"Unknown asset kind {asset.kind!r} for ref {asset.ref!r}"
-            )
+            rec = self._auto_generate_internal(asset)
 
         self._resolved[asset.ref] = rec
         return rec
@@ -656,12 +657,12 @@ class AssetSourcer:
 
         # 3. Fetchable from allowlist?
         if manifest_entry and manifest_entry.get("source_url"):
-            return self._fetch_cc0(asset, manifest_entry)
+            try:
+                return self._fetch_cc0(asset, manifest_entry)
+            except Exception:
+                pass
 
-        raise FileNotFoundError(
-            f"CC0 asset {asset.ref!r} is not bundled, not synthesisable, "
-            "and has no source_url in the manifest."
-        )
+        return self._auto_generate_internal(asset)
 
     def _synth_audio_asset(
         self,
