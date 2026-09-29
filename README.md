@@ -15,10 +15,10 @@ Run these three commands:
 ```bash
 ./scripts/bootstrap.ps1          # on Windows (or ./scripts/bootstrap.sh on Linux)
 hermes model                     # pick a >=64k-context worker model (see call-out below)
-cwt run --engine local --offline # renders a real 42s ad. No keys. No network. $0.00
+cwt run --engine local --offline # renders a real 48s ad. No keys. No network. $0.00
 ```
 
-This replays pre-recorded, scrubbed HTTP fixtures and renders a complete 42-second, 1080x1920 MP4 ad with voiceover, motion graphics, and audio mixing into `runs/<run_id>/render/final.mp4`.
+This replays pre-recorded, scrubbed HTTP fixtures and renders a complete 48-second, 1080x1920 MP4 ad with voiceover, motion graphics, and audio mixing into `runs/<run_id>/render/final.mp4`.
 
 ---
 
@@ -107,7 +107,53 @@ Notice that the three research cards (`res_pain`, `res_unique`, `res_crowd`) exe
 
 ---
 
-## 4. The Agent Team (§7.3)
+## 4. Video Generation Behavior: Does It Make a New Video Every Time?
+
+A common question is whether running the agent generates a brand-new video or reuses previous outputs.
+
+### Short Answer
+**Yes, a new video file is created on every run**, stored in a newly minted, timestamped directory (`runs/<run_id>/render/final.mp4`) and copied to `submission/final.mp4`. However, **whether the narrative content changes or stays fixed depends on the execution mode**:
+
+| Execution Mode | Example Command | New Video File? | Different Script & Visuals? | Cost |
+| :--- | :--- | :--- | :--- | :--- |
+| **Offline Replay Mode** | `cwt run --engine local --offline` | **Yes** (renders fresh MP4 to new `runs/<run_id>`) | **No** (seeds deterministic storyboard & script from baseline fixtures) | **$0.00** (Zero API keys, zero network) |
+| **Live Autonomous Mode** | `cwt run` (or `cwt run --engine hermes`) | **Yes** (renders fresh MP4 to new `runs/<run_id>`) | **Yes** (generates new 12-hook search, 3 script variants, LLM-judged splice, fresh TTS) | **≈ $0.24–0.70** |
+| **Targeted Stage Re-run** | `cwt run --run-id <id> --force-stage render` | **Yes** (re-renders video in targeted run) | **Preserves existing run's script** (skips prior stages via artifact cache) | **$0.00** (LLM cost) |
+
+---
+
+### How the Modes Differ in Detail
+
+1. **Offline Mode (`--offline`)**
+   - **Purpose**: Rapid local testing, automated CI/CD validation, and recording kanban demo videos without spending API credits or network bandwidth.
+   - **Behavior**: The engine seeds `runs/<run_id>/artifacts/` from `fixtures/artifacts/`. Stages 1–9 (`ads` through `compliance`) are instantly verified as valid replays. Stages 10–12 (`render`, `qa`, `collect`) execute live on your machine, compiling the HTML5/CSS3/GSAP motion graphics composition, synchronizing audio, and rendering a full 48-second 1080×1920 video at 30 fps via Hyperframes.
+   - **Consistency**: Every offline run produces the **same verified narrative and beat structure**, rendering it into a unique timestamped run directory every time.
+
+2. **Live Autonomous Mode (Default / Online)**
+   - **Purpose**: Full production creative generation.
+   - **Behavior**: The agent team executes dynamically across all 11 stages:
+     - **Hook Generation**: Generates and scores **12 distinct hook candidates** against historical engagement archetypes.
+     - **Variant Scriptwriting**: Produces **3 distinct script angles** (*pain point*, *unique data*, *crowd consensus*).
+     - **Creative Splice & Judging**: The Creative Director agent evaluates the variants, splices the highest-converting beats, and rewrites for maximum narrative tension.
+     - **Deterministic Compliance**: Scans every claim against prohibited financial advice rules, requiring verifiable process claims and mandatory risk disclosures.
+     - **Audio & Render**: Generates fresh synthetic TTS voiceover narration, matches millisecond word timestamps, and renders dynamic motion graphics tailored to that script.
+   - **Variety**: Every live run produces a **completely original ad concept, script, and visual layout**.
+
+3. **Resuming or Re-rendering an Existing Run (`--run-id` and `--force-stage`)**
+   - If you wish to re-render or adjust the video styling of an existing run without re-paying for LLM steps:
+     ```powershell
+     cwt run --run-id 20260929-1331-8eff --force-stage render
+     ```
+   - Thanks to the `ArtifactStore.get_if_valid` stage cache, all earlier stages are replayed at **$0.00**, and only the video render stage is re-executed.
+
+4. **Zero-Overlap Voiceover Synchronization Architecture**
+   - **Millisecond Audio Alignment**: Visual scene cuts (`s01` through `s12`) are synchronized beat-by-beat to spoken word timestamps extracted directly from `voiceover.json`.
+   - **Sequential Clip Lifecycle**: Clips mount sequentially with strictly non-overlapping `data-start` and `data-duration` attributes, eliminating visual ghosting and bleed-through.
+   - **Inner Content Animations**: GSAP transitions operate on isolated inner `#content_{sid}` containers, preserving native browser compositor performance and complying with Hyperframes static guard rules.
+
+---
+
+## 5. The Agent Team (§7.3)
 
 Nine specialized agent personas collaborate on the board:
 
@@ -127,7 +173,7 @@ Nine specialized agent personas collaborate on the board:
 
 ---
 
-## 5. Why the Compliance Gate is Deterministic First (Appendix A)
+## 6. Why the Compliance Gate is Deterministic First (Appendix A)
 
 Advertising financial services requires strict compliance. Meta and Google prohibit deceptive financial promises, guaranteed-return claims, and unsubstantiated performance statistics. Violations trigger account suspensions.
 
@@ -142,7 +188,7 @@ The compliance engine operates deterministically before any creative judgment:
 
 ---
 
-## 6. Recording the Kanban Video
+## 7. Recording the Kanban Video
 
 Do not manually configure screen recording. We provide a helper script:
 
@@ -161,7 +207,7 @@ Do not manually configure screen recording. We provide a helper script:
 
 ---
 
-## 7. Deployment
+## 8. Deployment
 
 ### 7.1 Windows (Primary Development Host)
 
@@ -226,7 +272,7 @@ cwt run
 
 ---
 
-## 8. What Success Looks Like (§13.3)
+## 9. What Success Looks Like (§13.3)
 
 ### Preflight Diagnostics (`cwt doctor`)
 
@@ -263,11 +309,11 @@ Done. 11 stages, $0.0000, output: runs\20260928-0946-d6df\render\final.mp4
 exit 0
 ```
 
-Verified output: `42.12s`, `1080x1920`, `H.264 / AAC`, valid stream format.
+Verified output: `48.00s`, `1080x1920`, `H.264 / AAC`, valid stream format.
 
 ---
 
-## 9. Troubleshooting (§14 Gotchas)
+## 10. Troubleshooting (§14 Gotchas)
 
 | Symptom | Root Cause | Resolution |
 |---|---|---|
@@ -281,7 +327,7 @@ Verified output: `42.12s`, `1080x1920`, `H.264 / AAC`, valid stream format.
 
 ---
 
-## 10. Security & Secret Isolation
+## 11. Security & Secret Isolation
 
 - **Dashboard Security (Non-negotiable §11.1)**: The dashboard plugin routes are unauthenticated by design. **Never run `hermes dashboard --host 0.0.0.0`. Bind strictly to localhost.**
 - **Public Repository (Rule R1)**: This repository is public and contains no credentials or secret tokens.
@@ -289,7 +335,7 @@ Verified output: `42.12s`, `1080x1920`, `H.264 / AAC`, valid stream format.
 
 ---
 
-## 11. Licenses
+## 12. Licenses
 
 - **Repository**: [MIT License](LICENSE)
 - **Third-Party Notices**: See [NOTICE](NOTICE) for license details of Hermes Agent, HyperFrames, FFmpeg, edge-tts, Piper, and the AGPL-3.0 process isolation architecture for OpenMontage.

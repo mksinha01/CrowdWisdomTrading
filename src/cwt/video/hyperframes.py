@@ -174,9 +174,9 @@ class HyperFramesBackend:
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
-      background: #06080e;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }}
@@ -184,36 +184,26 @@ class HyperFramesBackend:
       width: 1080px;
       height: 1920px;
       position: relative;
-      background: radial-gradient(circle at 50% 25%, #0f1c30 0%, #06080e 70%);
+      background: radial-gradient(circle at 50% 25%, #ffffff 0%, #f1f5f9 70%);
       overflow: hidden;
     }}
     .cyber-grid {{
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
       background-size: 60px 60px;
       pointer-events: none;
       z-index: 1;
     }}
     .scanlines {{
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.15),
-        rgba(0, 0, 0, 0.15) 2px,
-        transparent 2px,
-        transparent 4px
-      );
-      pointer-events: none;
-      z-index: 2;
+      display: none;
     }}
     .vignette {{
       position: absolute;
       inset: 0;
-      box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.85);
+      box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.05);
       pointer-events: none;
       z-index: 3;
     }}
@@ -229,26 +219,26 @@ class HyperFramesBackend:
       font-size: 20px;
       letter-spacing: 2px;
       font-weight: 700;
-      color: #94a3b8;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #64748b;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
       padding-bottom: 18px;
     }}
     .hud-badge {{
       display: flex;
       align-items: center;
       gap: 12px;
-      color: #00f0ff;
+      color: #0ea5e9;
       text-transform: uppercase;
     }}
     .beacon {{
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #00ff88;
-      box-shadow: 0 0 12px #00ff88;
+      background: #10b981;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
     }}
     .hud-title {{
-      color: #ffffff;
+      color: #334155;
       font-weight: 800;
       letter-spacing: 3px;
     }}
@@ -263,7 +253,7 @@ class HyperFramesBackend:
       z-index: 20;
       font-size: 19px;
       color: #64748b;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
       padding-top: 18px;
       letter-spacing: 1.5px;
     }}
@@ -272,9 +262,9 @@ class HyperFramesBackend:
       gap: 28px;
       font-weight: 700;
     }}
-    .t-up {{ color: #00ff88; }}
-    .t-down {{ color: #ff3b5c; }}
-    .t-cyan {{ color: #00f0ff; }}
+    .t-up {{ color: #10b981; }}
+    .t-down {{ color: #ef4444; }}
+    .t-cyan {{ color: #0ea5e9; }}
     .clip {{
       position: absolute;
       inset: 0;
@@ -300,37 +290,37 @@ class HyperFramesBackend:
       letter-spacing: 4px;
       line-height: 1.1;
       text-align: center;
-      color: #ffffff;
-      text-shadow: 0 0 35px rgba(0, 240, 255, 0.6);
+      color: #0f172a;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       margin-bottom: 30px;
     }}
     .hero-subtitle {{
       font-size: 36px;
       font-weight: 600;
-      color: #94a3b8;
+      color: #475569;
       text-align: center;
       max-width: 860px;
       line-height: 1.4;
       letter-spacing: 1px;
     }}
     .cyan-glow {{
-      color: #00f0ff;
-      text-shadow: 0 0 25px rgba(0, 240, 255, 0.7);
+      color: #0ea5e9;
+      text-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
     }}
     .red-glow {{
-      color: #ff3b5c;
-      text-shadow: 0 0 25px rgba(255, 59, 92, 0.7);
+      color: #ef4444;
+      text-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
     }}
     .green-glow {{
-      color: #00ff88;
-      text-shadow: 0 0 25px rgba(0, 255, 136, 0.7);
+      color: #10b981;
+      text-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
     }}
     .glass-card {{
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(0, 240, 255, 0.25);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.6);
       border-radius: 20px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 240, 255, 0.1);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.02);
       padding: 40px;
       width: 100%;
       max-width: 900px;
@@ -344,8 +334,8 @@ class HyperFramesBackend:
       margin: 40px 0;
     }}
     .candle-item {{
-      background: rgba(10, 16, 28, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.05);
       border-radius: 12px;
       height: 160px;
       display: flex;
@@ -353,11 +343,12 @@ class HyperFramesBackend:
       align-items: center;
       justify-content: center;
       position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
     }}
     .candle-wick {{
       width: 3px;
       height: 130px;
-      background: #475569;
+      background: #cbd5e1;
       position: absolute;
     }}
     .candle-body {{
@@ -367,13 +358,13 @@ class HyperFramesBackend:
       border-radius: 4px;
     }}
     .candle-red .candle-body {{
-      background: #ff3b5c;
-      box-shadow: 0 0 15px rgba(255, 59, 92, 0.6);
+      background: #ef4444;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
       height: 70px;
     }}
     .candle-green .candle-body {{
-      background: #00ff88;
-      box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+      background: #10b981;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
       height: 80px;
     }}
     .feed-list {{
@@ -390,8 +381,9 @@ class HyperFramesBackend:
       justify-content: space-between;
       padding: 24px 30px;
       border-radius: 16px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
     }}
     .feed-user {{
       display: flex;
@@ -399,6 +391,7 @@ class HyperFramesBackend:
       gap: 16px;
       font-size: 24px;
       font-weight: 700;
+      color: #334155;
     }}
     .feed-claim {{
       font-size: 26px;
@@ -420,17 +413,17 @@ class HyperFramesBackend:
     }}
     .dial-bg {{
       fill: none;
-      stroke: rgba(255, 255, 255, 0.1);
+      stroke: rgba(0, 0, 0, 0.05);
       stroke-width: 24;
     }}
     .dial-progress {{
       fill: none;
-      stroke: #00f0ff;
+      stroke: #0ea5e9;
       stroke-width: 24;
       stroke-dasharray: 880;
       stroke-dashoffset: 80;
       stroke-linecap: round;
-      filter: drop-shadow(0 0 15px #00f0ff);
+      filter: drop-shadow(0 4px 15px rgba(14, 165, 233, 0.3));
     }}
     .dial-center {{
       position: absolute;
@@ -441,13 +434,13 @@ class HyperFramesBackend:
     .dial-pct {{
       font-size: 78px;
       font-weight: 900;
-      color: #ffffff;
-      text-shadow: 0 0 20px #00f0ff;
+      color: #0f172a;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }}
     .dial-sub {{
       font-size: 22px;
       font-weight: 700;
-      color: #00ff88;
+      color: #10b981;
       letter-spacing: 2px;
       text-transform: uppercase;
     }}
@@ -456,17 +449,18 @@ class HyperFramesBackend:
       justify-content: space-between;
       align-items: center;
       padding: 20px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
       font-size: 28px;
       font-weight: 700;
     }}
     .level-label {{
-      color: #94a3b8;
+      color: #64748b;
     }}
     .level-val {{
       font-family: monospace;
       font-size: 32px;
       font-weight: 800;
+      color: #0f172a;
     }}
     .ledger-table {{
       width: 100%;
@@ -475,14 +469,15 @@ class HyperFramesBackend:
     }}
     .ledger-table td {{
       padding: 18px 24px;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(255, 255, 255, 0.9);
       font-size: 24px;
       font-weight: 700;
+      color: #0f172a;
     }}
     .ledger-table tr td:first-child {{
       border-top-left-radius: 12px;
       border-bottom-left-radius: 12px;
-      color: #94a3b8;
+      color: #64748b;
       font-family: monospace;
     }}
     .ledger-table tr td:last-child {{
@@ -491,32 +486,32 @@ class HyperFramesBackend:
       text-align: right;
     }}
     .cta-btn {{
-      background: linear-gradient(135deg, #00f0ff 0%, #0088ff 100%);
-      color: #040914;
+      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+      color: #ffffff;
       font-size: 36px;
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 3px;
       padding: 28px 64px;
       border-radius: 60px;
-      box-shadow: 0 0 50px rgba(0, 240, 255, 0.6), 0 15px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 15px 30px rgba(14, 165, 233, 0.3), 0 5px 15px rgba(0, 0, 0, 0.1);
       margin-top: 40px;
       display: inline-block;
       text-align: center;
     }}
     .disclaimer-card {{
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(251, 191, 36, 0.4);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(245, 158, 11, 0.3);
       border-radius: 16px;
       padding: 36px 40px;
       max-width: 920px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
     }}
     .disclaimer-text {{
       font-size: 24px;
       line-height: 1.6;
-      color: #cbd5e1;
+      color: #475569;
       font-weight: 500;
     }}
   </style>
@@ -594,13 +589,13 @@ class HyperFramesBackend:
       <h1 id="title_{sid}" class="hero-title">EVERYONE IS <span class="cyan-glow">CERTAIN</span></h1>
       <p id="sub_{sid}" class="hero-subtitle">Thousands of traders post their read on the same five tickers.</p>
       <div id="feeds_{sid}" class="feed-list">
-        <div class="feed-card" style="border-left: 6px solid #00ff88;">
+        <div class="feed-card" style="border-left: 6px solid #10b981;">
           <div class="feed-user"><span>[BUY]</span><span>@GuruTraderAlpha</span></div>
           <div class="feed-claim green-glow">BUY NVDA 200C (+400%)</div>
         </div>
       </div>
       <div id="badge_{sid}" class="glass-card" style="text-align: center; max-width: 680px; margin-top: 20px;">
-        <span style="font-size: 24px; font-weight: 700; color: #94a3b8;">WHO DO YOU TRUST WHEN SIGNALS CONFLICT?</span>
+        <span style="font-size: 24px; font-weight: 700; color: #475569;">WHO DO YOU TRUST WHEN SIGNALS CONFLICT?</span>
       </div>
 """
         # Shot 3: Conflicting Guru Calls & Noise
@@ -609,11 +604,11 @@ class HyperFramesBackend:
       <h1 id="title_{sid}" class="hero-title">NOISE & <span class="red-glow">CONTRADICTION</span></h1>
       <p id="sub_{sid}" class="hero-subtitle">None of them share your downside when they are wrong.</p>
       <div id="feeds_{sid}" class="feed-list">
-        <div class="feed-card" style="border-left: 6px solid #ff3b5c;">
+        <div class="feed-card" style="border-left: 6px solid #ef4444;">
           <div class="feed-user"><span>[DUMP]</span><span>@MacroBearPro</span></div>
           <div class="feed-claim red-glow">MARKET TOPPING - DUMP NOW</div>
         </div>
-        <div class="feed-card" style="border-left: 6px solid #00f0ff;">
+        <div class="feed-card" style="border-left: 6px solid #0ea5e9;">
           <div class="feed-user"><span>[ALPH]</span><span>@BreakoutWizard</span></div>
           <div class="feed-claim cyan-glow">MASSIVE SQUEEZE LOADING</div>
         </div>
@@ -624,15 +619,15 @@ class HyperFramesBackend:
             return f"""
       <h1 id="title_{sid}" class="hero-title">INHERITING <span class="red-glow">BLIND SPOTS</span></h1>
       <p id="sub_{sid}" class="hero-subtitle">Following one guru means inheriting one person's bad morning.</p>
-      <div id="card_{sid}" class="glass-card" style="margin: 30px 0; border: 1px solid rgba(255, 59, 92, 0.4);">
+      <div id="card_{sid}" class="glass-card" style="margin: 30px 0; border: 1px solid rgba(239, 68, 68, 0.4);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-          <span style="font-size: 28px; font-weight: 800; color: #ff3b5c;">SUPPORT LEVEL COLLAPSED</span>
-          <span style="font-size: 24px; font-weight: 700; color: #ef4444; background: rgba(239,68,68,0.2); padding: 6px 14px; border-radius: 8px;">-24.8% DRAWDOWN</span>
+          <span style="font-size: 28px; font-weight: 800; color: #ef4444;">SUPPORT LEVEL COLLAPSED</span>
+          <span style="font-size: 24px; font-weight: 700; color: #ef4444; background: rgba(239,68,68,0.1); padding: 6px 14px; border-radius: 8px;">-24.8% DRAWDOWN</span>
         </div>
         <svg viewBox="0 0 800 240" style="width: 100%; height: 220px;">
-          <line x1="0" y1="120" x2="800" y2="120" stroke="rgba(255,255,255,0.2)" stroke-dasharray="8 8" stroke-width="2"/>
-          <text x="20" y="110" fill="#94a3b8" font-size="20" font-weight="700">SUPPORT $142.50</text>
-          <path d="M 0 100 L 160 90 L 320 115 L 480 85 L 560 120 L 680 200 L 800 230" fill="none" stroke="#ff3b5c" stroke-width="5"/>
+          <line x1="0" y1="120" x2="800" y2="120" stroke="rgba(0,0,0,0.1)" stroke-dasharray="8 8" stroke-width="2"/>
+          <text x="20" y="110" fill="#64748b" font-size="20" font-weight="700">SUPPORT $142.50</text>
+          <path d="M 0 100 L 160 90 L 320 115 L 480 85 L 560 120 L 680 200 L 800 230" fill="none" stroke="#ef4444" stroke-width="5"/>
         </svg>
       </div>
 """
@@ -642,9 +637,9 @@ class HyperFramesBackend:
       <h1 id="title_{sid}" class="hero-title">WE READ <span class="cyan-glow">ALL OF THEM</span></h1>
       <p id="sub_{sid}" class="hero-subtitle">Real-time multi-agent social ingestion across all platforms.</p>
       <div id="matrix_{sid}" class="glass-card" style="text-align: center; margin: 30px 0;">
-        <div style="font-size: 92px; font-weight: 900; color: #00f0ff; text-shadow: 0 0 35px #00f0ff; font-family: monospace;">28,450</div>
-        <div style="font-size: 26px; font-weight: 800; letter-spacing: 4px; color: #ffffff; text-transform: uppercase;">PUBLIC SIGNALS ANALYZED / SEC</div>
-        <div style="display: flex; justify-content: space-around; margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 22px; font-weight: 700; color: #94a3b8;">
+        <div style="font-size: 92px; font-weight: 900; color: #0ea5e9; text-shadow: 0 4px 15px rgba(14, 165, 233, 0.2); font-family: monospace;">28,450</div>
+        <div style="font-size: 26px; font-weight: 800; letter-spacing: 4px; color: #0f172a; text-transform: uppercase;">PUBLIC SIGNALS ANALYZED / SEC</div>
+        <div style="display: flex; justify-content: space-around; margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(0,0,0,0.08); font-size: 22px; font-weight: 700; color: #64748b;">
           <span>TWITTER / X</span>
           <span>--</span>
           <span>REDDIT</span>
@@ -681,8 +676,8 @@ class HyperFramesBackend:
       <p id="sub_{sid}" class="hero-subtitle">High-probability setup with defined execution bounds.</p>
       <div id="card_{sid}" class="glass-card" style="margin: 25px 0;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <span style="font-size: 32px; font-weight: 900; color: #ffffff;">$NVDA LONG CONSENSUS</span>
-          <span style="font-size: 22px; font-weight: 700; color: #00ff88; background: rgba(0,255,136,0.15); padding: 6px 16px; border-radius: 20px;">R:R 1:3.8</span>
+          <span style="font-size: 32px; font-weight: 900; color: #0f172a;">$NVDA LONG CONSENSUS</span>
+          <span style="font-size: 22px; font-weight: 700; color: #10b981; background: rgba(16,185,129,0.1); padding: 6px 16px; border-radius: 20px;">R:R 1:3.8</span>
         </div>
         <div class="level-row">
           <span class="level-label">ENTRY LEVEL</span>
@@ -745,8 +740,8 @@ class HyperFramesBackend:
         </table>
       </div>
       <div id="badge_{sid}" style="display: flex; gap: 20px;">
-        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00ff88;">68.4% WIN RATE</span>
-        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00f0ff;">100% AUDITED</span>
+        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #10b981;">68.4% WIN RATE</span>
+        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #0ea5e9;">100% AUDITED</span>
       </div>
 """
         # Shot 10: No Guru Secrets
@@ -754,16 +749,16 @@ class HyperFramesBackend:
             return f"""
       <h1 id="title_{sid}" class="hero-title" style="font-size: 88px; line-height: 1.05;">NO GURU <span class="red-glow">SECRETS</span></h1>
       <p id="sub_{sid}" class="hero-subtitle" style="font-size: 42px; margin-top: 20px;">No private signals. No $10,000 courses.</p>
-      <div id="slam_{sid}" class="glass-card" style="margin: 40px 0; text-align: center; border: 2px solid rgba(0, 240, 255, 0.4);">
-        <p style="font-size: 34px; font-weight: 800; color: #ffffff; letter-spacing: 2px;">JUST PURE MATHEMATICAL CONSENSUS</p>
+      <div id="slam_{sid}" class="glass-card" style="margin: 40px 0; text-align: center; border: 2px solid rgba(14, 165, 233, 0.4);">
+        <p style="font-size: 34px; font-weight: 800; color: #0f172a; letter-spacing: 2px;">JUST PURE MATHEMATICAL CONSENSUS</p>
       </div>
 """
         # Shot 11: Compliance & Risk Disclosure
         elif sid in ("s11", "s11") or "risk" in desc.lower() or "disclaimer" in desc.lower() or beat == "compliance":
             return f"""
       <div id="card_{sid}" class="disclaimer-card">
-        <div style="font-size: 48px; margin-bottom: 16px; color: #fbbf24;">[DISCLOSURE]</div>
-        <h2 style="font-size: 34px; font-weight: 800; color: #fbbf24; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;">Risk Disclosure & Notice</h2>
+        <div style="font-size: 48px; margin-bottom: 16px; color: #f59e0b;">[DISCLOSURE]</div>
+        <h2 style="font-size: 34px; font-weight: 800; color: #f59e0b; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;">Risk Disclosure & Notice</h2>
         <p class="disclaimer-text">
           Trading stocks, options, and cryptocurrencies involves significant risk of loss. CrowdWisdomTrading provides algorithmic consensus analytics for informational and educational purposes only. Not financial advice. Past performance does not guarantee future results.
         </p>
@@ -772,13 +767,13 @@ class HyperFramesBackend:
         # Shot 12: CTA & Brand Outro
         else:
             return f"""
-      <div id="logo_{sid}" style="width: 140px; height: 140px; border-radius: 36px; background: linear-gradient(135deg, #00f0ff, #0066ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(0, 240, 255, 0.7); margin-bottom: 30px; font-size: 54px; font-weight: 900; color: #040914;">
+      <div id="logo_{sid}" style="width: 140px; height: 140px; border-radius: 36px; background: linear-gradient(135deg, #0ea5e9, #3b82f6); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.3); margin-bottom: 30px; font-size: 54px; font-weight: 900; color: #ffffff;">
         CWT
       </div>
       <h1 id="title_{sid}" class="hero-title" style="font-size: 68px; margin-bottom: 16px;">CROWDWISDOM <span class="cyan-glow">TRADING</span></h1>
       <p id="sub_{sid}" class="hero-subtitle" style="font-size: 36px;">Collective intelligence for traders.</p>
       <div id="cta_{sid}" class="cta-btn">SEE TODAY'S CALLS</div>
-      <p id="url_{sid}" style="font-size: 34px; font-weight: 800; color: #00f0ff; letter-spacing: 3px; margin-top: 36px; text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);">
+      <p id="url_{sid}" style="font-size: 34px; font-weight: 800; color: #0ea5e9; letter-spacing: 3px; margin-top: 36px; text-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);">
         crowdwisdomtrading.com
       </p>
 """
