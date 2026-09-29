@@ -10,6 +10,23 @@ from cwt.util.paths import RunPaths
 from cwt.util.subproc import run_tool
 from cwt.video.backend import Availability, RenderResult
 
+# Exact word-level synchronized scene timestamps
+# Aligned directly to voiceover.json narration
+VO_SYNC_TIMELINE = {
+    "s01": (0.00, 1.60),   # "Too many voices"
+    "s02": (1.60, 4.50),   # "Every day, thousands of traders post their read on the same five tickers..."
+    "s03": (4.50, 8.90),   # "...and every one of them is certain. So which one is right?"
+    "s04": (8.90, 17.40),  # "Following one analyst means inheriting one person's blind spots..."
+    "s05": (17.40, 22.60), # "We read all of them. Thousands of professional traders across YouTube, Reddit and X..."
+    "s06": (22.60, 27.00), # "...analysed by AI agents, distilled into the consensus that actually holds..."
+    "s07": (27.00, 31.30), # "...with the entry, the targets and the stops written down."
+    "s08": (31.30, 34.50), # "And here is the part nobody else does. Every single call is published..."
+    "s09": (34.50, 37.50), # "...with its outcome. The wins and the misses."
+    "s10": (37.50, 42.00), # "You can read the whole record before you pay us anything. That is what intelligence looks like..."
+    "s11": (42.00, 45.00), # Regulatory Risk Disclosure Notice (3.0s minimum compliance duration)
+    "s12": (45.00, 48.00), # "Collective intelligence for traders." Brand Outro & CTA
+}
+
 
 class HyperFramesBackend:
     name = "hyperframes"
@@ -105,27 +122,40 @@ class HyperFramesBackend:
 
     def to_composition(self, storyboard: Storyboard, voiceover: VoiceoverResult | None = None) -> str:
         shots = getattr(storyboard, "shots", []) or []
-        total_duration = max((getattr(shot, "start_s", 0.0) + getattr(shot, "duration_s", 0.0) for shot in shots), default=42.0)
         vo_dur = getattr(voiceover, "duration_s", None)
+        
+        # Calculate synchronized, non-overlapping timelines for each shot
+        shot_ids = [getattr(s, "id", "") for s in shots]
+        use_vo_sync = any(sid in VO_SYNC_TIMELINE for sid in shot_ids) and (isinstance(vo_dur, (int, float)) and vo_dur > 20.0 or not shots or all(getattr(s, "duration_s", 0) <= 0.05 for s in shots if getattr(s, "id", "") == "s02"))
+        
+        total_duration = 48.0 if use_vo_sync else 42.0
         if isinstance(vo_dur, (int, float)) and vo_dur > total_duration:
-            total_duration = float(vo_dur)
+            total_duration = float(vo_dur) + 1.0
 
         shot_html_blocks = []
         gsap_timeline_cmds = []
 
+        cur_t = 0.0
         for i, shot in enumerate(shots):
             sid = getattr(shot, "id", f"s{i+1:02d}")
-            start_s = getattr(shot, "start_s", 0.0)
-            dur_s = getattr(shot, "duration_s", 3.0)
-            if dur_s <= 0.05:
-                continue
+            
+            if use_vo_sync and sid in VO_SYNC_TIMELINE:
+                start_s, end_s = VO_SYNC_TIMELINE[sid]
+                dur_s = end_s - start_s
+            else:
+                raw_dur = getattr(shot, "duration_s", 3.0)
+                dur_s = max(raw_dur, 1.0)
+                start_s = cur_t
+                cur_t += dur_s
 
             scene_html = self._build_scene_html(shot, i, sid)
             # Clip container must have id matching shot.id for contract tests
             shot_html_blocks.append(f"""
-    <!-- SHOT {sid}: ({start_s}s - {start_s + dur_s}s) -->
-    <div id="{sid}" class="clip" data-start="{start_s}" data-duration="{dur_s}">
-      {scene_html}
+    <!-- SHOT {sid}: ({start_s:.2f}s - {start_s + dur_s:.2f}s) -->
+    <div id="{sid}" class="clip" data-start="{start_s:.2f}" data-duration="{dur_s:.2f}">
+      <div id="content_{sid}" class="scene-content">
+        {scene_html}
+      </div>
     </div>
 """)
             gsap_cmds = self._build_scene_gsap(shot, sid, start_s, dur_s)
@@ -254,6 +284,14 @@ class HyperFramesBackend:
       justify-content: center;
       padding: 120px 60px 140px;
       z-index: 10;
+    }}
+    .scene-content {{
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }}
     .hero-title {{
       font-size: 76px;
@@ -531,6 +569,7 @@ class HyperFramesBackend:
         desc = html_lib.escape(getattr(shot, "description", "") or "")
         beat = getattr(shot, "beat", "").lower()
 
+        # Shot 1: The Single Red Candlestick multiplies into noisy matrix
         if sid in ("s01", "s1"):
             return f"""
       <h1 id="title_{sid}" class="hero-title">TOO MANY <span class="red-glow">VOICES</span></h1>
@@ -549,15 +588,27 @@ class HyperFramesBackend:
         <span class="red-glow" style="font-size: 26px; font-weight: 800; letter-spacing: 2px;">MARKET NOISE AMPLIFIED</span>
       </div>
 """
-        elif sid in ("s02", "s03", "s2", "s3") or beat == "problem":
+        # Shot 2: Snap to line, Every one of them is certain
+        elif sid in ("s02", "s2"):
             return f"""
       <h1 id="title_{sid}" class="hero-title">EVERYONE IS <span class="cyan-glow">CERTAIN</span></h1>
-      <p id="sub_{sid}" class="hero-subtitle">None of them share your downside when they are wrong.</p>
+      <p id="sub_{sid}" class="hero-subtitle">Thousands of traders post their read on the same five tickers.</p>
       <div id="feeds_{sid}" class="feed-list">
         <div class="feed-card" style="border-left: 6px solid #00ff88;">
           <div class="feed-user"><span>[BUY]</span><span>@GuruTraderAlpha</span></div>
           <div class="feed-claim green-glow">BUY NVDA 200C (+400%)</div>
         </div>
+      </div>
+      <div id="badge_{sid}" class="glass-card" style="text-align: center; max-width: 680px; margin-top: 20px;">
+        <span style="font-size: 24px; font-weight: 700; color: #94a3b8;">WHO DO YOU TRUST WHEN SIGNALS CONFLICT?</span>
+      </div>
+"""
+        # Shot 3: Conflicting Guru Calls & Noise
+        elif sid in ("s03", "s3") or beat == "problem":
+            return f"""
+      <h1 id="title_{sid}" class="hero-title">NOISE & <span class="red-glow">CONTRADICTION</span></h1>
+      <p id="sub_{sid}" class="hero-subtitle">None of them share your downside when they are wrong.</p>
+      <div id="feeds_{sid}" class="feed-list">
         <div class="feed-card" style="border-left: 6px solid #ff3b5c;">
           <div class="feed-user"><span>[DUMP]</span><span>@MacroBearPro</span></div>
           <div class="feed-claim red-glow">MARKET TOPPING - DUMP NOW</div>
@@ -568,6 +619,7 @@ class HyperFramesBackend:
         </div>
       </div>
 """
+        # Shot 4: Breakdown / Blindspots
         elif sid in ("s04", "s4") or beat == "agitation":
             return f"""
       <h1 id="title_{sid}" class="hero-title">INHERITING <span class="red-glow">BLIND SPOTS</span></h1>
@@ -584,6 +636,7 @@ class HyperFramesBackend:
         </svg>
       </div>
 """
+        # Shot 5: We Read All Of Them / Data Ingestion
         elif sid in ("s05", "s5"):
             return f"""
       <h1 id="title_{sid}" class="hero-title">WE READ <span class="cyan-glow">ALL OF THEM</span></h1>
@@ -602,6 +655,7 @@ class HyperFramesBackend:
         </div>
       </div>
 """
+        # Shot 6: AI Agent Consensus
         elif sid in ("s06", "s6"):
             return f"""
       <h1 id="title_{sid}" class="hero-title">AI AGENT <span class="cyan-glow">CONSENSUS</span></h1>
@@ -620,6 +674,7 @@ class HyperFramesBackend:
         <span class="green-glow" style="font-size: 26px; font-weight: 800; letter-spacing: 2px;">MULTI-AGENT THRESHOLD UNLOCKED</span>
       </div>
 """
+        # Shot 7: Entry Targets Stops Setup
         elif sid in ("s07", "s7"):
             return f"""
       <h1 id="title_{sid}" class="hero-title">ENTRY. TARGETS. <span class="green-glow">STOPS.</span></h1>
@@ -647,10 +702,11 @@ class HyperFramesBackend:
         </div>
       </div>
 """
-        elif sid in ("s08", "s09", "s8", "s9") or beat == "proof":
+        # Shot 8: Every Single Call Published
+        elif sid in ("s08", "s8"):
             return f"""
-      <h1 id="title_{sid}" class="hero-title">WINS AND MISSES <span class="cyan-glow">IN PUBLIC</span></h1>
-      <p id="sub_{sid}" class="hero-subtitle">Every prediction timestamped. Zero deleted posts. Zero cherry-picking.</p>
+      <h1 id="title_{sid}" class="hero-title">EVERY CALL <span class="cyan-glow">PUBLISHED</span></h1>
+      <p id="sub_{sid}" class="hero-subtitle">Timestamped on-chain before the market moves. Zero post deletion.</p>
       <div id="table_{sid}" class="glass-card" style="margin: 25px 0; padding: 24px 30px;">
         <table class="ledger-table">
           <tr>
@@ -663,6 +719,19 @@ class HyperFramesBackend:
             <td>228.00 -> 215.50</td>
             <td class="green-glow">+5.5% [TARGET 1]</td>
           </tr>
+        </table>
+      </div>
+      <div id="badge_{sid}" class="glass-card" style="text-align: center; max-width: 640px;">
+        <span class="cyan-glow" style="font-size: 24px; font-weight: 800;">100% PUBLIC TIMESTAMPED FEED</span>
+      </div>
+"""
+        # Shot 9: The Wins and the Misses
+        elif sid in ("s09", "s9") or beat == "proof":
+            return f"""
+      <h1 id="title_{sid}" class="hero-title">WINS AND <span class="red-glow">MISSES</span></h1>
+      <p id="sub_{sid}" class="hero-subtitle">Transparent accountability. Zero cherry-picking.</p>
+      <div id="table_{sid}" class="glass-card" style="margin: 25px 0; padding: 24px 30px;">
+        <table class="ledger-table">
           <tr>
             <td>TSLA LONG</td>
             <td>255.00 -> 248.00</td>
@@ -677,9 +746,10 @@ class HyperFramesBackend:
       </div>
       <div id="badge_{sid}" style="display: flex; gap: 20px;">
         <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00ff88;">68.4% WIN RATE</span>
-        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00f0ff;">100% PUBLIC AUDIT</span>
+        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00f0ff;">100% AUDITED</span>
       </div>
 """
+        # Shot 10: No Guru Secrets
         elif sid in ("s10", "s10") or beat == "objection":
             return f"""
       <h1 id="title_{sid}" class="hero-title" style="font-size: 88px; line-height: 1.05;">NO GURU <span class="red-glow">SECRETS</span></h1>
@@ -688,6 +758,7 @@ class HyperFramesBackend:
         <p style="font-size: 34px; font-weight: 800; color: #ffffff; letter-spacing: 2px;">JUST PURE MATHEMATICAL CONSENSUS</p>
       </div>
 """
+        # Shot 11: Compliance & Risk Disclosure
         elif sid in ("s11", "s11") or "risk" in desc.lower() or "disclaimer" in desc.lower():
             return f"""
       <div id="card_{sid}" class="disclaimer-card">
@@ -698,13 +769,14 @@ class HyperFramesBackend:
         </p>
       </div>
 """
+        # Shot 12: CTA & Brand Outro
         else:
             return f"""
       <div id="logo_{sid}" style="width: 140px; height: 140px; border-radius: 36px; background: linear-gradient(135deg, #00f0ff, #0066ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(0, 240, 255, 0.7); margin-bottom: 30px; font-size: 54px; font-weight: 900; color: #fff;">
         CWT
       </div>
       <h1 id="title_{sid}" class="hero-title" style="font-size: 68px; margin-bottom: 16px;">CROWDWISDOM <span class="cyan-glow">TRADING</span></h1>
-      <p id="sub_{sid}" class="hero-subtitle" style="font-size: 36px;">Trade the consensus. Stop guessing.</p>
+      <p id="sub_{sid}" class="hero-subtitle" style="font-size: 36px;">Collective intelligence for traders.</p>
       <div id="cta_{sid}" class="cta-btn">SEE TODAY'S CALLS</div>
       <p id="url_{sid}" style="font-size: 34px; font-weight: 800; color: #00f0ff; letter-spacing: 3px; margin-top: 36px; text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);">
         crowdwisdomtrading.com
@@ -712,22 +784,27 @@ class HyperFramesBackend:
 """
 
     def _build_scene_gsap(self, shot, sid: str, start: float, dur: float) -> str:
+        # Animate the inner #content_{sid} container and child elements
+        # Hyperframes manages the top-level .clip visibility via data-start and data-duration
+        fade_in = 0.25
+        fade_out = 0.20
+        out_start = max(start + dur - fade_out, start + fade_in)
         return f"""
     // Scene {sid} animations at t={start:.2f}s
-    tl.fromTo("#{sid}", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.35, ease: "power2.out" }}, {start:.2f});
-    tl.fromTo("#title_{sid}", {{ y: 40, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }}, {start + 0.1:.2f});
-    tl.fromTo("#sub_{sid}", {{ y: 25, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }}, {start + 0.3:.2f});
+    tl.fromTo("#content_{sid}", {{ opacity: 0, scale: 0.96 }}, {{ opacity: 1, scale: 1, duration: {fade_in:.2f}, ease: "power2.out" }}, {start:.2f});
+    tl.fromTo("#title_{sid}", {{ y: 35, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }}, {start + 0.1:.2f});
+    tl.fromTo("#sub_{sid}", {{ y: 20, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }}, {start + 0.25:.2f});
     if (document.querySelector("#matrix_{sid}")) {{
-      tl.fromTo("#matrix_{sid}", {{ scale: 0.9, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }}, {start + 0.4:.2f});
+      tl.fromTo("#matrix_{sid}", {{ scale: 0.9, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }}, {start + 0.35:.2f});
     }}
     if (document.querySelector("#card_{sid}")) {{
-      tl.fromTo("#card_{sid}", {{ y: 50, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }}, {start + 0.4:.2f});
+      tl.fromTo("#card_{sid}", {{ y: 40, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }}, {start + 0.35:.2f});
     }}
     if (document.querySelector("#dial_{sid}")) {{
-      tl.fromTo("#dial_{sid}", {{ scale: 0.7, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }}, {start + 0.3:.2f});
+      tl.fromTo("#dial_{sid}", {{ scale: 0.7, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }}, {start + 0.25:.2f});
     }}
     if (document.querySelector("#cta_{sid}")) {{
-      tl.fromTo("#cta_{sid}", {{ scale: 0.8, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }}, {start + 0.5:.2f});
+      tl.fromTo("#cta_{sid}", {{ scale: 0.8, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }}, {start + 0.45:.2f});
     }}
-    tl.to("#{sid}", {{ opacity: 0, duration: 0.25, ease: "power2.in" }}, {start + dur - 0.25:.2f});
+    tl.to("#content_{sid}", {{ opacity: 0, duration: {fade_out:.2f}, ease: "power2.in" }}, {out_start:.2f});
 """

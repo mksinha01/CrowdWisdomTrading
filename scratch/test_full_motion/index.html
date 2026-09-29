@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CrowdWisdomTrading — Consensus Ad</title>
+  <title>CrowdWisdomTrading - Consensus Ad</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -19,7 +19,6 @@
       background: radial-gradient(circle at 50% 25%, #0f1c30 0%, #06080e 70%);
       overflow: hidden;
     }
-    /* Cyber grid overlay */
     .cyber-grid {
       position: absolute;
       inset: 0;
@@ -30,7 +29,6 @@
       pointer-events: none;
       z-index: 1;
     }
-    /* Scanlines */
     .scanlines {
       position: absolute;
       inset: 0;
@@ -44,7 +42,6 @@
       pointer-events: none;
       z-index: 2;
     }
-    /* Ambient vignette */
     .vignette {
       position: absolute;
       inset: 0;
@@ -52,7 +49,6 @@
       pointer-events: none;
       z-index: 3;
     }
-    /* Top HUD */
     .top-hud {
       position: absolute;
       top: 48px;
@@ -82,18 +78,12 @@
       border-radius: 50%;
       background: #00ff88;
       box-shadow: 0 0 12px #00ff88;
-      animation: pulse-beacon 1.2s infinite;
-    }
-    @keyframes pulse-beacon {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.6; }
     }
     .hud-title {
       color: #ffffff;
       font-weight: 800;
       letter-spacing: 3px;
     }
-    /* Bottom Ticker HUD */
     .bottom-hud {
       position: absolute;
       bottom: 48px;
@@ -117,7 +107,7 @@
     .t-up { color: #00ff88; }
     .t-down { color: #ff3b5c; }
     .t-cyan { color: #00f0ff; }
-    /* Standard Clip Container */
+    /* Strictly isolated scene clips: completely hidden until active, zero visual bleed */
     .clip {
       position: absolute;
       inset: 0;
@@ -127,8 +117,10 @@
       justify-content: center;
       padding: 120px 60px 140px;
       z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
-    /* Typography Styles */
     .hero-title {
       font-size: 76px;
       font-weight: 900;
@@ -161,7 +153,6 @@
       color: #00ff88;
       text-shadow: 0 0 25px rgba(0, 255, 136, 0.7);
     }
-    /* Glass Cards */
     .glass-card {
       background: rgba(15, 23, 42, 0.75);
       border: 1px solid rgba(0, 240, 255, 0.25);
@@ -172,7 +163,6 @@
       width: 100%;
       max-width: 900px;
     }
-    /* Candlestick Matrix */
     .candle-matrix {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -214,7 +204,6 @@
       box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
       height: 80px;
     }
-    /* Notifications Grid */
     .feed-list {
       display: flex;
       flex-direction: column;
@@ -243,7 +232,6 @@
       font-size: 26px;
       font-weight: 800;
     }
-    /* Consensus Dial */
     .consensus-dial {
       position: relative;
       width: 340px;
@@ -291,7 +279,6 @@
       letter-spacing: 2px;
       text-transform: uppercase;
     }
-    /* Setup Level Bars */
     .level-row {
       display: flex;
       justify-content: space-between;
@@ -309,7 +296,6 @@
       font-size: 32px;
       font-weight: 800;
     }
-    /* Ledger Table */
     .ledger-table {
       width: 100%;
       border-collapse: separate;
@@ -332,7 +318,6 @@
       border-bottom-right-radius: 12px;
       text-align: right;
     }
-    /* CTA Outro Button */
     .cta-btn {
       background: linear-gradient(135deg, #00f0ff 0%, #0088ff 100%);
       color: #040914;
@@ -347,7 +332,6 @@
       display: inline-block;
       text-align: center;
     }
-    /* Compliance Disclaimer */
     .disclaimer-card {
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(251, 191, 36, 0.4);
@@ -367,17 +351,14 @@
   <script src="gsap.min.js"></script>
 </head>
 <body>
-  <div id="root" data-composition-id="root" data-width="1080" data-height="1920" data-duration="42.0">
-    <!-- Audio Elements -->
-    <audio id="bgm" data-start="0" data-duration="42.0" data-volume="0.18" src="music.wav"></audio>
-    <audio id="vo" data-start="0" data-duration="42.0" data-volume="1.0" src="vo.mp3"></audio>
+  <div id="root" data-composition-id="root" data-width="1080" data-height="1920" data-duration="48.0">
+    <audio id="bgm" data-start="0" data-duration="48.0" data-volume="0.18" src="music.wav"></audio>
+    <audio id="vo" data-start="0" data-duration="46.6" data-volume="1.0" src="vo.mp3"></audio>
 
-    <!-- Global Cyber Overlays -->
     <div class="cyber-grid"></div>
     <div class="scanlines"></div>
     <div class="vignette"></div>
 
-    <!-- Top Persistent HUD -->
     <div class="top-hud">
       <div class="hud-badge">
         <div class="beacon"></div>
@@ -387,7 +368,6 @@
       <div>9:16 HD</div>
     </div>
 
-    <!-- Bottom Persistent HUD -->
     <div class="bottom-hud">
       <div class="ticker-stream">
         <span>$NVDA <span class="t-up">+4.8%</span></span>
@@ -398,10 +378,9 @@
       <div class="t-cyan">VERIFIED ON-CHAIN</div>
     </div>
 
-    <!-- SCENES / SHOTS -->
 
-    <!-- SHOT s01: HOOK (0.0s - 3.4s) -->
-    <div id="scene_s01" class="clip" data-start="0.0" data-duration="3.4">
+    <!-- SHOT s01: (0.00s - 1.60s) -->
+    <div id="s01" class="clip" data-start="0.00" data-duration="1.60">
       
       <h1 id="title_s01" class="hero-title">TOO MANY <span class="red-glow">VOICES</span></h1>
       <p id="sub_s01" class="hero-subtitle">Every day, thousands of traders scream conflicting predictions.</p>
@@ -422,22 +401,36 @@
     </div>
 
 
-    <!-- SHOT s03: PROBLEM (3.4s - 8.8s) -->
-    <div id="scene_s03" class="clip" data-start="3.4" data-duration="5.4">
+    <!-- SHOT s02: (1.60s - 4.50s) -->
+    <div id="s02" class="clip" data-start="1.60" data-duration="2.90">
       
-      <h1 id="title_s03" class="hero-title">EVERYONE IS <span class="cyan-glow">CERTAIN</span></h1>
-      <p id="sub_s03" class="hero-subtitle">None of them share your downside when they're wrong.</p>
-      <div id="feeds_s03" class="feed-list">
+      <h1 id="title_s02" class="hero-title">EVERYONE IS <span class="cyan-glow">CERTAIN</span></h1>
+      <p id="sub_s02" class="hero-subtitle">Thousands of traders post their read on the same five tickers.</p>
+      <div id="feeds_s02" class="feed-list">
         <div class="feed-card" style="border-left: 6px solid #00ff88;">
-          <div class="feed-user"><span>🚀</span><span>@GuruTraderAlpha</span></div>
+          <div class="feed-user"><span>[BUY]</span><span>@GuruTraderAlpha</span></div>
           <div class="feed-claim green-glow">BUY NVDA 200C (+400%)</div>
         </div>
+      </div>
+      <div id="badge_s02" class="glass-card" style="text-align: center; max-width: 680px; margin-top: 20px;">
+        <span style="font-size: 24px; font-weight: 700; color: #94a3b8;">WHO DO YOU TRUST WHEN SIGNALS CONFLICT?</span>
+      </div>
+
+    </div>
+
+
+    <!-- SHOT s03: (4.50s - 8.90s) -->
+    <div id="s03" class="clip" data-start="4.50" data-duration="4.40">
+      
+      <h1 id="title_s03" class="hero-title">NOISE & <span class="red-glow">CONTRADICTION</span></h1>
+      <p id="sub_s03" class="hero-subtitle">None of them share your downside when they are wrong.</p>
+      <div id="feeds_s03" class="feed-list">
         <div class="feed-card" style="border-left: 6px solid #ff3b5c;">
-          <div class="feed-user"><span>📉</span><span>@MacroBearPro</span></div>
+          <div class="feed-user"><span>[DUMP]</span><span>@MacroBearPro</span></div>
           <div class="feed-claim red-glow">MARKET TOPPING - DUMP NOW</div>
         </div>
         <div class="feed-card" style="border-left: 6px solid #00f0ff;">
-          <div class="feed-user"><span>💎</span><span>@BreakoutWizard</span></div>
+          <div class="feed-user"><span>[ALPH]</span><span>@BreakoutWizard</span></div>
           <div class="feed-claim cyan-glow">MASSIVE SQUEEZE LOADING</div>
         </div>
       </div>
@@ -445,8 +438,8 @@
     </div>
 
 
-    <!-- SHOT s04: AGITATION (8.8s - 14.600000000000001s) -->
-    <div id="scene_s04" class="clip" data-start="8.8" data-duration="5.8">
+    <!-- SHOT s04: (8.90s - 17.40s) -->
+    <div id="s04" class="clip" data-start="8.90" data-duration="8.50">
       
       <h1 id="title_s04" class="hero-title">INHERITING <span class="red-glow">BLIND SPOTS</span></h1>
       <p id="sub_s04" class="hero-subtitle">Following one guru means inheriting one person's bad morning.</p>
@@ -458,15 +451,15 @@
         <svg viewBox="0 0 800 240" style="width: 100%; height: 220px;">
           <line x1="0" y1="120" x2="800" y2="120" stroke="rgba(255,255,255,0.2)" stroke-dasharray="8 8" stroke-width="2"/>
           <text x="20" y="110" fill="#94a3b8" font-size="20" font-weight="700">SUPPORT $142.50</text>
-          <path d="M 0 100 L 160 90 L 320 115 L 480 85 L 560 120 L 680 200 L 800 230" fill="none" stroke="#ff3b5c" stroke-width="5" filter="drop-shadow(0 0 10px #ff3b5c)"/>
+          <path d="M 0 100 L 160 90 L 320 115 L 480 85 L 560 120 L 680 200 L 800 230" fill="none" stroke="#ff3b5c" stroke-width="5"/>
         </svg>
       </div>
 
     </div>
 
 
-    <!-- SHOT s05: MECHANISM (14.6s - 17.8s) -->
-    <div id="scene_s05" class="clip" data-start="14.6" data-duration="3.2">
+    <!-- SHOT s05: (17.40s - 22.60s) -->
+    <div id="s05" class="clip" data-start="17.40" data-duration="5.20">
       
       <h1 id="title_s05" class="hero-title">WE READ <span class="cyan-glow">ALL OF THEM</span></h1>
       <p id="sub_s05" class="hero-subtitle">Real-time multi-agent social ingestion across all platforms.</p>
@@ -475,11 +468,11 @@
         <div style="font-size: 26px; font-weight: 800; letter-spacing: 4px; color: #ffffff; text-transform: uppercase;">PUBLIC SIGNALS ANALYZED / SEC</div>
         <div style="display: flex; justify-content: space-around; margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 22px; font-weight: 700; color: #94a3b8;">
           <span>TWITTER / X</span>
-          <span>•</span>
+          <span>--</span>
           <span>REDDIT</span>
-          <span>•</span>
+          <span>--</span>
           <span>TELEGRAM</span>
-          <span>•</span>
+          <span>--</span>
           <span>DISCORD</span>
         </div>
       </div>
@@ -487,8 +480,8 @@
     </div>
 
 
-    <!-- SHOT s06: MECHANISM (17.8s - 21.0s) -->
-    <div id="scene_s06" class="clip" data-start="17.8" data-duration="3.2">
+    <!-- SHOT s06: (22.60s - 27.00s) -->
+    <div id="s06" class="clip" data-start="22.60" data-duration="4.40">
       
       <h1 id="title_s06" class="hero-title">AI AGENT <span class="cyan-glow">CONSENSUS</span></h1>
       <p id="sub_s06" class="hero-subtitle">Scoring conviction, track record, and mathematical alignment.</p>
@@ -503,14 +496,14 @@
         </div>
       </div>
       <div id="badge_s06" class="glass-card" style="text-align: center; max-width: 680px;">
-        <span class="green-glow" style="font-size: 26px; font-weight: 800; letter-spacing: 2px;">● MULTI-AGENT THRESHOLD UNLOCKED</span>
+        <span class="green-glow" style="font-size: 26px; font-weight: 800; letter-spacing: 2px;">MULTI-AGENT THRESHOLD UNLOCKED</span>
       </div>
 
     </div>
 
 
-    <!-- SHOT s07: MECHANISM (21.0s - 24.1s) -->
-    <div id="scene_s07" class="clip" data-start="21.0" data-duration="3.1">
+    <!-- SHOT s07: (27.00s - 31.30s) -->
+    <div id="s07" class="clip" data-start="27.00" data-duration="4.30">
       
       <h1 id="title_s07" class="hero-title">ENTRY. TARGETS. <span class="green-glow">STOPS.</span></h1>
       <p id="sub_s07" class="hero-subtitle">High-probability setup with defined execution bounds.</p>
@@ -540,82 +533,61 @@
     </div>
 
 
-    <!-- SHOT s08: PROOF (24.1s - 27.200000000000003s) -->
-    <div id="scene_s08" class="clip" data-start="24.1" data-duration="3.1">
+    <!-- SHOT s08: (31.30s - 34.50s) -->
+    <div id="s08" class="clip" data-start="31.30" data-duration="3.20">
       
-      <h1 id="title_s08" class="hero-title">WINS & MISSES <span class="cyan-glow">IN PUBLIC</span></h1>
-      <p id="sub_s08" class="hero-subtitle">Every prediction timestamped. Zero deleted posts. Zero cherry-picking.</p>
+      <h1 id="title_s08" class="hero-title">EVERY CALL <span class="cyan-glow">PUBLISHED</span></h1>
+      <p id="sub_s08" class="hero-subtitle">Timestamped on-chain before the market moves. Zero post deletion.</p>
       <div id="table_s08" class="glass-card" style="margin: 25px 0; padding: 24px 30px;">
         <table class="ledger-table">
           <tr>
             <td>NVDA LONG</td>
-            <td>124.50 → 138.00</td>
+            <td>124.50 -> 138.00</td>
             <td class="green-glow">+10.8% [TARGET 2]</td>
           </tr>
           <tr>
             <td>AAPL SHORT</td>
-            <td>228.00 → 215.50</td>
+            <td>228.00 -> 215.50</td>
             <td class="green-glow">+5.5% [TARGET 1]</td>
-          </tr>
-          <tr>
-            <td>TSLA LONG</td>
-            <td>255.00 → 248.00</td>
-            <td class="red-glow">-2.7% [STOPPED]</td>
-          </tr>
-          <tr>
-            <td>BTC LONG</td>
-            <td>61,200 → 65,400</td>
-            <td class="green-glow">+6.9% [TARGET 1]</td>
           </tr>
         </table>
       </div>
-      <div id="badge_s08" style="display: flex; gap: 20px;">
-        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00ff88;">68.4% WIN RATE</span>
-        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00f0ff;">100% PUBLIC AUDIT</span>
+      <div id="badge_s08" class="glass-card" style="text-align: center; max-width: 640px;">
+        <span class="cyan-glow" style="font-size: 24px; font-weight: 800;">100% PUBLIC TIMESTAMPED FEED</span>
       </div>
 
     </div>
 
 
-    <!-- SHOT s09: PROOF (27.2s - 30.2s) -->
-    <div id="scene_s09" class="clip" data-start="27.2" data-duration="3.0">
+    <!-- SHOT s09: (34.50s - 37.50s) -->
+    <div id="s09" class="clip" data-start="34.50" data-duration="3.00">
       
-      <h1 id="title_s09" class="hero-title">WINS & MISSES <span class="cyan-glow">IN PUBLIC</span></h1>
-      <p id="sub_s09" class="hero-subtitle">Every prediction timestamped. Zero deleted posts. Zero cherry-picking.</p>
+      <h1 id="title_s09" class="hero-title">WINS AND <span class="red-glow">MISSES</span></h1>
+      <p id="sub_s09" class="hero-subtitle">Transparent accountability. Zero cherry-picking.</p>
       <div id="table_s09" class="glass-card" style="margin: 25px 0; padding: 24px 30px;">
         <table class="ledger-table">
           <tr>
-            <td>NVDA LONG</td>
-            <td>124.50 → 138.00</td>
-            <td class="green-glow">+10.8% [TARGET 2]</td>
-          </tr>
-          <tr>
-            <td>AAPL SHORT</td>
-            <td>228.00 → 215.50</td>
-            <td class="green-glow">+5.5% [TARGET 1]</td>
-          </tr>
-          <tr>
             <td>TSLA LONG</td>
-            <td>255.00 → 248.00</td>
+            <td>255.00 -> 248.00</td>
             <td class="red-glow">-2.7% [STOPPED]</td>
           </tr>
           <tr>
             <td>BTC LONG</td>
-            <td>61,200 → 65,400</td>
+            <td>61,200 -> 65,400</td>
             <td class="green-glow">+6.9% [TARGET 1]</td>
           </tr>
         </table>
       </div>
       <div id="badge_s09" style="display: flex; gap: 20px;">
         <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00ff88;">68.4% WIN RATE</span>
-        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00f0ff;">100% PUBLIC AUDIT</span>
+        <span class="glass-card" style="padding: 16px 32px; font-size: 22px; font-weight: 800; color: #00f0ff;">100% AUDITED</span>
       </div>
 
     </div>
 
 
-    <!-- SHOT s10: OBJECTION (30.2s - 33.0s) -->
-    <div id="scene_s10" class="clip" data-start="30.2" data-duration="2.8">
+    <!-- SHOT s10: (37.50s - 42.00s) -->
+    <div id="s10" class="clip" data-start="37.50" data-duration="4.50">
       
       <h1 id="title_s10" class="hero-title" style="font-size: 88px; line-height: 1.05;">NO GURU <span class="red-glow">SECRETS</span></h1>
       <p id="sub_s10" class="hero-subtitle" style="font-size: 42px; margin-top: 20px;">No private signals. No $10,000 courses.</p>
@@ -626,8 +598,8 @@
     </div>
 
 
-    <!-- SHOT s11: OBJECTION (33.0s - 35.9s) -->
-    <div id="scene_s11" class="clip" data-start="33.0" data-duration="2.9">
+    <!-- SHOT s11: (42.00s - 45.00s) -->
+    <div id="s11" class="clip" data-start="42.00" data-duration="3.00">
       
       <h1 id="title_s11" class="hero-title" style="font-size: 88px; line-height: 1.05;">NO GURU <span class="red-glow">SECRETS</span></h1>
       <p id="sub_s11" class="hero-subtitle" style="font-size: 42px; margin-top: 20px;">No private signals. No $10,000 courses.</p>
@@ -638,15 +610,15 @@
     </div>
 
 
-    <!-- SHOT s12: CTA (35.9s - 42.0s) -->
-    <div id="scene_s12" class="clip" data-start="35.9" data-duration="6.1">
+    <!-- SHOT s12: (45.00s - 48.00s) -->
+    <div id="s12" class="clip" data-start="45.00" data-duration="3.00">
       
-      <div id="logo_s12" style="width: 140px; height: 140px; border-radius: 36px; background: linear-gradient(135deg, #00f0ff, #0066ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(0, 240, 255, 0.7); margin-bottom: 30px;">
-        <span style="font-size: 72px;">📊</span>
+      <div id="logo_s12" style="width: 140px; height: 140px; border-radius: 36px; background: linear-gradient(135deg, #00f0ff, #0066ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(0, 240, 255, 0.7); margin-bottom: 30px; font-size: 54px; font-weight: 900; color: #fff;">
+        CWT
       </div>
       <h1 id="title_s12" class="hero-title" style="font-size: 68px; margin-bottom: 16px;">CROWDWISDOM <span class="cyan-glow">TRADING</span></h1>
-      <p id="sub_s12" class="hero-subtitle" style="font-size: 36px;">Trade the consensus. Stop guessing.</p>
-      <div id="cta_s12" class="cta-btn">SEE TODAY'S CALLS →</div>
+      <p id="sub_s12" class="hero-subtitle" style="font-size: 36px;">Collective intelligence for traders.</p>
+      <div id="cta_s12" class="cta-btn">SEE TODAY'S CALLS</div>
       <p id="url_s12" style="font-size: 34px; font-weight: 800; color: #00f0ff; letter-spacing: 3px; margin-top: 36px; text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);">
         crowdwisdomtrading.com
       </p>
@@ -657,217 +629,259 @@
   </div>
 
   <script>
-    // Hyperframes GSAP Timeline Registration
     const tl = gsap.timeline({ paused: true });
 
 
-    // Scene s01 animations at t=0.00s
-    tl.fromTo("#scene_s01", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.00);
-    tl.fromTo("#title_s01", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 0.10);
-    tl.fromTo("#sub_s01", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 0.30);
+    // Scene s01 timeline: strictly active in [0.00s, 1.60s]
+    tl.set("#s01", { visibility: "visible" }, 0.00);
+    tl.fromTo("#s01", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 0.00);
+    tl.fromTo("#title_s01", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 0.10);
+    tl.fromTo("#sub_s01", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.25);
     if (document.querySelector("#matrix_s01")) {
-      tl.fromTo("#matrix_s01", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.40);
+      tl.fromTo("#matrix_s01", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.35);
     }
     if (document.querySelector("#card_s01")) {
-      tl.fromTo("#card_s01", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.40);
+      tl.fromTo("#card_s01", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.35);
     }
     if (document.querySelector("#dial_s01")) {
-      tl.fromTo("#dial_s01", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 0.30);
+      tl.fromTo("#dial_s01", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 0.25);
     }
     if (document.querySelector("#cta_s01")) {
-      tl.fromTo("#cta_s01", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 0.50);
+      tl.fromTo("#cta_s01", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 0.45);
     }
-    tl.to("#scene_s01", { opacity: 0, duration: 0.25, ease: "power2.in" }, 3.15);
+    tl.to("#s01", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 1.40);
+    tl.set("#s01", { visibility: "hidden" }, 1.60);
 
 
-    // Scene s03 animations at t=3.40s
-    tl.fromTo("#scene_s03", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 3.40);
-    tl.fromTo("#title_s03", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 3.50);
-    tl.fromTo("#sub_s03", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 3.70);
+    // Scene s02 timeline: strictly active in [1.60s, 4.50s]
+    tl.set("#s02", { visibility: "visible" }, 1.60);
+    tl.fromTo("#s02", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 1.60);
+    tl.fromTo("#title_s02", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 1.70);
+    tl.fromTo("#sub_s02", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 1.85);
+    if (document.querySelector("#matrix_s02")) {
+      tl.fromTo("#matrix_s02", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 1.95);
+    }
+    if (document.querySelector("#card_s02")) {
+      tl.fromTo("#card_s02", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 1.95);
+    }
+    if (document.querySelector("#dial_s02")) {
+      tl.fromTo("#dial_s02", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 1.85);
+    }
+    if (document.querySelector("#cta_s02")) {
+      tl.fromTo("#cta_s02", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 2.05);
+    }
+    tl.to("#s02", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 4.30);
+    tl.set("#s02", { visibility: "hidden" }, 4.50);
+
+
+    // Scene s03 timeline: strictly active in [4.50s, 8.90s]
+    tl.set("#s03", { visibility: "visible" }, 4.50);
+    tl.fromTo("#s03", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 4.50);
+    tl.fromTo("#title_s03", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 4.60);
+    tl.fromTo("#sub_s03", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 4.75);
     if (document.querySelector("#matrix_s03")) {
-      tl.fromTo("#matrix_s03", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 3.80);
+      tl.fromTo("#matrix_s03", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 4.85);
     }
     if (document.querySelector("#card_s03")) {
-      tl.fromTo("#card_s03", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 3.80);
+      tl.fromTo("#card_s03", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 4.85);
     }
     if (document.querySelector("#dial_s03")) {
-      tl.fromTo("#dial_s03", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 3.70);
+      tl.fromTo("#dial_s03", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 4.75);
     }
     if (document.querySelector("#cta_s03")) {
-      tl.fromTo("#cta_s03", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 3.90);
+      tl.fromTo("#cta_s03", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 4.95);
     }
-    tl.to("#scene_s03", { opacity: 0, duration: 0.25, ease: "power2.in" }, 8.55);
+    tl.to("#s03", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 8.70);
+    tl.set("#s03", { visibility: "hidden" }, 8.90);
 
 
-    // Scene s04 animations at t=8.80s
-    tl.fromTo("#scene_s04", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 8.80);
-    tl.fromTo("#title_s04", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 8.90);
-    tl.fromTo("#sub_s04", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 9.10);
+    // Scene s04 timeline: strictly active in [8.90s, 17.40s]
+    tl.set("#s04", { visibility: "visible" }, 8.90);
+    tl.fromTo("#s04", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 8.90);
+    tl.fromTo("#title_s04", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 9.00);
+    tl.fromTo("#sub_s04", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 9.15);
     if (document.querySelector("#matrix_s04")) {
-      tl.fromTo("#matrix_s04", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 9.20);
+      tl.fromTo("#matrix_s04", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 9.25);
     }
     if (document.querySelector("#card_s04")) {
-      tl.fromTo("#card_s04", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 9.20);
+      tl.fromTo("#card_s04", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 9.25);
     }
     if (document.querySelector("#dial_s04")) {
-      tl.fromTo("#dial_s04", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 9.10);
+      tl.fromTo("#dial_s04", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 9.15);
     }
     if (document.querySelector("#cta_s04")) {
-      tl.fromTo("#cta_s04", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 9.30);
+      tl.fromTo("#cta_s04", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 9.35);
     }
-    tl.to("#scene_s04", { opacity: 0, duration: 0.25, ease: "power2.in" }, 14.35);
+    tl.to("#s04", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 17.20);
+    tl.set("#s04", { visibility: "hidden" }, 17.40);
 
 
-    // Scene s05 animations at t=14.60s
-    tl.fromTo("#scene_s05", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 14.60);
-    tl.fromTo("#title_s05", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 14.70);
-    tl.fromTo("#sub_s05", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 14.90);
+    // Scene s05 timeline: strictly active in [17.40s, 22.60s]
+    tl.set("#s05", { visibility: "visible" }, 17.40);
+    tl.fromTo("#s05", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 17.40);
+    tl.fromTo("#title_s05", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 17.50);
+    tl.fromTo("#sub_s05", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 17.65);
     if (document.querySelector("#matrix_s05")) {
-      tl.fromTo("#matrix_s05", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 15.00);
+      tl.fromTo("#matrix_s05", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 17.75);
     }
     if (document.querySelector("#card_s05")) {
-      tl.fromTo("#card_s05", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 15.00);
+      tl.fromTo("#card_s05", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 17.75);
     }
     if (document.querySelector("#dial_s05")) {
-      tl.fromTo("#dial_s05", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 14.90);
+      tl.fromTo("#dial_s05", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 17.65);
     }
     if (document.querySelector("#cta_s05")) {
-      tl.fromTo("#cta_s05", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 15.10);
+      tl.fromTo("#cta_s05", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 17.85);
     }
-    tl.to("#scene_s05", { opacity: 0, duration: 0.25, ease: "power2.in" }, 17.55);
+    tl.to("#s05", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 22.40);
+    tl.set("#s05", { visibility: "hidden" }, 22.60);
 
 
-    // Scene s06 animations at t=17.80s
-    tl.fromTo("#scene_s06", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 17.80);
-    tl.fromTo("#title_s06", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 17.90);
-    tl.fromTo("#sub_s06", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 18.10);
+    // Scene s06 timeline: strictly active in [22.60s, 27.00s]
+    tl.set("#s06", { visibility: "visible" }, 22.60);
+    tl.fromTo("#s06", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 22.60);
+    tl.fromTo("#title_s06", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 22.70);
+    tl.fromTo("#sub_s06", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 22.85);
     if (document.querySelector("#matrix_s06")) {
-      tl.fromTo("#matrix_s06", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 18.20);
+      tl.fromTo("#matrix_s06", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 22.95);
     }
     if (document.querySelector("#card_s06")) {
-      tl.fromTo("#card_s06", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 18.20);
+      tl.fromTo("#card_s06", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 22.95);
     }
     if (document.querySelector("#dial_s06")) {
-      tl.fromTo("#dial_s06", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 18.10);
+      tl.fromTo("#dial_s06", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 22.85);
     }
     if (document.querySelector("#cta_s06")) {
-      tl.fromTo("#cta_s06", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 18.30);
+      tl.fromTo("#cta_s06", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 23.05);
     }
-    tl.to("#scene_s06", { opacity: 0, duration: 0.25, ease: "power2.in" }, 20.75);
+    tl.to("#s06", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 26.80);
+    tl.set("#s06", { visibility: "hidden" }, 27.00);
 
 
-    // Scene s07 animations at t=21.00s
-    tl.fromTo("#scene_s07", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 21.00);
-    tl.fromTo("#title_s07", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 21.10);
-    tl.fromTo("#sub_s07", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 21.30);
+    // Scene s07 timeline: strictly active in [27.00s, 31.30s]
+    tl.set("#s07", { visibility: "visible" }, 27.00);
+    tl.fromTo("#s07", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 27.00);
+    tl.fromTo("#title_s07", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 27.10);
+    tl.fromTo("#sub_s07", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 27.25);
     if (document.querySelector("#matrix_s07")) {
-      tl.fromTo("#matrix_s07", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 21.40);
+      tl.fromTo("#matrix_s07", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 27.35);
     }
     if (document.querySelector("#card_s07")) {
-      tl.fromTo("#card_s07", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 21.40);
+      tl.fromTo("#card_s07", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 27.35);
     }
     if (document.querySelector("#dial_s07")) {
-      tl.fromTo("#dial_s07", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 21.30);
+      tl.fromTo("#dial_s07", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 27.25);
     }
     if (document.querySelector("#cta_s07")) {
-      tl.fromTo("#cta_s07", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 21.50);
+      tl.fromTo("#cta_s07", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 27.45);
     }
-    tl.to("#scene_s07", { opacity: 0, duration: 0.25, ease: "power2.in" }, 23.85);
+    tl.to("#s07", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 31.10);
+    tl.set("#s07", { visibility: "hidden" }, 31.30);
 
 
-    // Scene s08 animations at t=24.10s
-    tl.fromTo("#scene_s08", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 24.10);
-    tl.fromTo("#title_s08", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 24.20);
-    tl.fromTo("#sub_s08", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 24.40);
+    // Scene s08 timeline: strictly active in [31.30s, 34.50s]
+    tl.set("#s08", { visibility: "visible" }, 31.30);
+    tl.fromTo("#s08", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 31.30);
+    tl.fromTo("#title_s08", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 31.40);
+    tl.fromTo("#sub_s08", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 31.55);
     if (document.querySelector("#matrix_s08")) {
-      tl.fromTo("#matrix_s08", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 24.50);
+      tl.fromTo("#matrix_s08", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 31.65);
     }
     if (document.querySelector("#card_s08")) {
-      tl.fromTo("#card_s08", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 24.50);
+      tl.fromTo("#card_s08", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 31.65);
     }
     if (document.querySelector("#dial_s08")) {
-      tl.fromTo("#dial_s08", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 24.40);
+      tl.fromTo("#dial_s08", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 31.55);
     }
     if (document.querySelector("#cta_s08")) {
-      tl.fromTo("#cta_s08", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 24.60);
+      tl.fromTo("#cta_s08", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 31.75);
     }
-    tl.to("#scene_s08", { opacity: 0, duration: 0.25, ease: "power2.in" }, 26.95);
+    tl.to("#s08", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 34.30);
+    tl.set("#s08", { visibility: "hidden" }, 34.50);
 
 
-    // Scene s09 animations at t=27.20s
-    tl.fromTo("#scene_s09", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 27.20);
-    tl.fromTo("#title_s09", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 27.30);
-    tl.fromTo("#sub_s09", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 27.50);
+    // Scene s09 timeline: strictly active in [34.50s, 37.50s]
+    tl.set("#s09", { visibility: "visible" }, 34.50);
+    tl.fromTo("#s09", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 34.50);
+    tl.fromTo("#title_s09", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 34.60);
+    tl.fromTo("#sub_s09", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 34.75);
     if (document.querySelector("#matrix_s09")) {
-      tl.fromTo("#matrix_s09", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 27.60);
+      tl.fromTo("#matrix_s09", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 34.85);
     }
     if (document.querySelector("#card_s09")) {
-      tl.fromTo("#card_s09", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 27.60);
+      tl.fromTo("#card_s09", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 34.85);
     }
     if (document.querySelector("#dial_s09")) {
-      tl.fromTo("#dial_s09", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 27.50);
+      tl.fromTo("#dial_s09", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 34.75);
     }
     if (document.querySelector("#cta_s09")) {
-      tl.fromTo("#cta_s09", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 27.70);
+      tl.fromTo("#cta_s09", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 34.95);
     }
-    tl.to("#scene_s09", { opacity: 0, duration: 0.25, ease: "power2.in" }, 29.95);
+    tl.to("#s09", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 37.30);
+    tl.set("#s09", { visibility: "hidden" }, 37.50);
 
 
-    // Scene s10 animations at t=30.20s
-    tl.fromTo("#scene_s10", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 30.20);
-    tl.fromTo("#title_s10", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 30.30);
-    tl.fromTo("#sub_s10", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 30.50);
+    // Scene s10 timeline: strictly active in [37.50s, 42.00s]
+    tl.set("#s10", { visibility: "visible" }, 37.50);
+    tl.fromTo("#s10", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 37.50);
+    tl.fromTo("#title_s10", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 37.60);
+    tl.fromTo("#sub_s10", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 37.75);
     if (document.querySelector("#matrix_s10")) {
-      tl.fromTo("#matrix_s10", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 30.60);
+      tl.fromTo("#matrix_s10", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 37.85);
     }
     if (document.querySelector("#card_s10")) {
-      tl.fromTo("#card_s10", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 30.60);
+      tl.fromTo("#card_s10", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 37.85);
     }
     if (document.querySelector("#dial_s10")) {
-      tl.fromTo("#dial_s10", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 30.50);
+      tl.fromTo("#dial_s10", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 37.75);
     }
     if (document.querySelector("#cta_s10")) {
-      tl.fromTo("#cta_s10", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 30.70);
+      tl.fromTo("#cta_s10", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 37.95);
     }
-    tl.to("#scene_s10", { opacity: 0, duration: 0.25, ease: "power2.in" }, 32.75);
+    tl.to("#s10", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 41.80);
+    tl.set("#s10", { visibility: "hidden" }, 42.00);
 
 
-    // Scene s11 animations at t=33.00s
-    tl.fromTo("#scene_s11", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 33.00);
-    tl.fromTo("#title_s11", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 33.10);
-    tl.fromTo("#sub_s11", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 33.30);
+    // Scene s11 timeline: strictly active in [42.00s, 45.00s]
+    tl.set("#s11", { visibility: "visible" }, 42.00);
+    tl.fromTo("#s11", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 42.00);
+    tl.fromTo("#title_s11", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 42.10);
+    tl.fromTo("#sub_s11", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 42.25);
     if (document.querySelector("#matrix_s11")) {
-      tl.fromTo("#matrix_s11", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 33.40);
+      tl.fromTo("#matrix_s11", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 42.35);
     }
     if (document.querySelector("#card_s11")) {
-      tl.fromTo("#card_s11", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 33.40);
+      tl.fromTo("#card_s11", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 42.35);
     }
     if (document.querySelector("#dial_s11")) {
-      tl.fromTo("#dial_s11", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 33.30);
+      tl.fromTo("#dial_s11", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 42.25);
     }
     if (document.querySelector("#cta_s11")) {
-      tl.fromTo("#cta_s11", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 33.50);
+      tl.fromTo("#cta_s11", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 42.45);
     }
-    tl.to("#scene_s11", { opacity: 0, duration: 0.25, ease: "power2.in" }, 35.65);
+    tl.to("#s11", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 44.80);
+    tl.set("#s11", { visibility: "hidden" }, 45.00);
 
 
-    // Scene s12 animations at t=35.90s
-    tl.fromTo("#scene_s12", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 35.90);
-    tl.fromTo("#title_s12", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.5)" }, 36.00);
-    tl.fromTo("#sub_s12", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 36.20);
+    // Scene s12 timeline: strictly active in [45.00s, 48.00s]
+    tl.set("#s12", { visibility: "visible" }, 45.00);
+    tl.fromTo("#s12", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 45.00);
+    tl.fromTo("#title_s12", { y: 35, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, 45.10);
+    tl.fromTo("#sub_s12", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 45.25);
     if (document.querySelector("#matrix_s12")) {
-      tl.fromTo("#matrix_s12", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 36.30);
+      tl.fromTo("#matrix_s12", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }, 45.35);
     }
     if (document.querySelector("#card_s12")) {
-      tl.fromTo("#card_s12", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 36.30);
+      tl.fromTo("#card_s12", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 45.35);
     }
     if (document.querySelector("#dial_s12")) {
-      tl.fromTo("#dial_s12", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.75)" }, 36.20);
+      tl.fromTo("#dial_s12", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.75)" }, 45.25);
     }
     if (document.querySelector("#cta_s12")) {
-      tl.fromTo("#cta_s12", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 36.40);
+      tl.fromTo("#cta_s12", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 45.45);
     }
-    tl.to("#scene_s12", { opacity: 0, duration: 0.25, ease: "power2.in" }, 41.75);
+    tl.to("#s12", { autoAlpha: 0, duration: 0.20, ease: "power2.in" }, 47.80);
+    tl.set("#s12", { visibility: "hidden" }, 48.00);
 
 
     window.__timelines = window.__timelines || {};
