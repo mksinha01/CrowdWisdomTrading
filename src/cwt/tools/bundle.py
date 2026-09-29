@@ -336,7 +336,7 @@ def _readme_submission(
         "The full source code is at the public GitHub repository:",
         "",
         "```",
-        "https://github.com/your-org/cwt-video-ads-agent",
+        "https://github.com/mksinha01/CrowdWisdomTrading",
         "```",
         "",
         "> Replace the URL above with your actual repo link before emailing.",

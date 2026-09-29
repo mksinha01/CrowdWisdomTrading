@@ -531,30 +531,6 @@ async def synthesize_voiceover(
                 continue
 
         elif backend == "silent":
-            sapi_avail, _ = _is_sapi_available()
-            if sapi_avail and not any(t.get("backend") == "sapi" for t in chain_tried):
-                try:
-                    sapi_audio, sapi_trans, sapi_words, sapi_dur = _synthesize_sapi(
-                        effective_text, out_dir, settings, declared_duration_s
-                    )
-                    chain_tried.append({
-                        "backend": "sapi",
-                        "available": True,
-                        "attempted": True,
-                        "succeeded": True,
-                        "elapsed_s": round(time.monotonic() - t0, 4),
-                    })
-                    return VoiceoverResult(
-                        audio_path=sapi_audio,
-                        transcript=sapi_trans,
-                        words=sapi_words,
-                        duration_s=sapi_dur,
-                        backend_used="sapi",
-                        chain_tried=chain_tried,
-                    )
-                except Exception as exc:
-                    logger.warning("sapi auto-fallback failed: %s", exc)
-
             try:
                 audio_path, transcript, words, duration_s = _synthesize_silent(
                     effective_text, declared_duration_s
