@@ -13,18 +13,18 @@ from cwt.video.backend import Availability, RenderResult
 # Exact word-level synchronized scene timestamps
 # Aligned directly to voiceover.json narration
 VO_SYNC_TIMELINE = {
-    "s01": (0.00, 1.60),   # "Too many voices"
-    "s02": (1.60, 4.50),   # "Every day, thousands of traders post their read on the same five tickers..."
-    "s03": (4.50, 8.90),   # "...and every one of them is certain. So which one is right?"
-    "s04": (8.90, 17.40),  # "Following one analyst means inheriting one person's blind spots..."
-    "s05": (17.40, 22.60), # "We read all of them. Thousands of professional traders across YouTube, Reddit and X..."
-    "s06": (22.60, 27.00), # "...analysed by AI agents, distilled into the consensus that actually holds..."
-    "s07": (27.00, 31.30), # "...with the entry, the targets and the stops written down."
-    "s08": (31.30, 34.50), # "And here is the part nobody else does. Every single call is published..."
-    "s09": (34.50, 37.50), # "...with its outcome. The wins and the misses."
-    "s10": (37.50, 42.00), # "You can read the whole record before you pay us anything. That is what intelligence looks like..."
-    "s11": (42.00, 45.00), # Regulatory Risk Disclosure Notice (3.0s minimum compliance duration)
-    "s12": (45.00, 48.00), # "Collective intelligence for traders." Brand Outro & CTA
+    "s01": (0.00, 1.10),   # "Too many voices." (0.00 - 1.02s)
+    "s02": (1.10, 5.40),   # "Every day, thousands of traders post their read on the same five tickers..." (1.02 - 5.51s)
+    "s03": (5.40, 8.90),   # "...and every one of them is certain. So which one is right?" (5.51 - 8.93s)
+    "s04": (8.90, 17.50),  # "Following one analyst means inheriting one person's blind spots..." (8.93 - 17.49s)
+    "s05": (17.50, 22.60), # "We read all of them. Thousands of professional traders across YouTube, Reddit and X..." (17.49 - 22.59s)
+    "s06": (22.60, 27.00), # "...analysed by AI agents, distilled into the consensus that actually holds..." (22.59 - 27.02s)
+    "s07": (27.00, 30.80), # "...with the entry, the targets and the stops written down." (27.02 - 30.37s)
+    "s08": (30.80, 34.60), # "And here is the part nobody else does. Every single call is published..." (30.37 - 34.63s)
+    "s09": (34.60, 37.40), # "...with its outcome. The wins and the misses." (34.63 - 37.20s)
+    "s10": (37.40, 41.40), # "You can read the whole record before you pay us anything. That is what intelligence looks like..." (37.20 - 41.46s)
+    "s11": (41.40, 44.40), # Regulatory Risk Disclosure Notice (3.0s minimum compliance duration, 41.46 - 44.39s "...when it is not a secret.")
+    "s12": (44.40, 48.00), # "Collective intelligence for traders." Brand Outro & CTA (44.39 - 46.61s voiceover, 48.0s video outro)
 }
 
 
@@ -750,7 +750,7 @@ class HyperFramesBackend:
       </div>
 """
         # Shot 10: No Guru Secrets
-        elif sid in ("s10", "s10") or beat == "objection":
+        elif sid in ("s10", "s10"):
             return f"""
       <h1 id="title_{sid}" class="hero-title" style="font-size: 88px; line-height: 1.05;">NO GURU <span class="red-glow">SECRETS</span></h1>
       <p id="sub_{sid}" class="hero-subtitle" style="font-size: 42px; margin-top: 20px;">No private signals. No $10,000 courses.</p>
@@ -759,7 +759,7 @@ class HyperFramesBackend:
       </div>
 """
         # Shot 11: Compliance & Risk Disclosure
-        elif sid in ("s11", "s11") or "risk" in desc.lower() or "disclaimer" in desc.lower():
+        elif sid in ("s11", "s11") or "risk" in desc.lower() or "disclaimer" in desc.lower() or beat == "compliance":
             return f"""
       <div id="card_{sid}" class="disclaimer-card">
         <div style="font-size: 48px; margin-bottom: 16px; color: #fbbf24;">[DISCLOSURE]</div>
@@ -772,7 +772,7 @@ class HyperFramesBackend:
         # Shot 12: CTA & Brand Outro
         else:
             return f"""
-      <div id="logo_{sid}" style="width: 140px; height: 140px; border-radius: 36px; background: linear-gradient(135deg, #00f0ff, #0066ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(0, 240, 255, 0.7); margin-bottom: 30px; font-size: 54px; font-weight: 900; color: #fff;">
+      <div id="logo_{sid}" style="width: 140px; height: 140px; border-radius: 36px; background: linear-gradient(135deg, #00f0ff, #0066ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(0, 240, 255, 0.7); margin-bottom: 30px; font-size: 54px; font-weight: 900; color: #040914;">
         CWT
       </div>
       <h1 id="title_{sid}" class="hero-title" style="font-size: 68px; margin-bottom: 16px;">CROWDWISDOM <span class="cyan-glow">TRADING</span></h1>
@@ -792,8 +792,12 @@ class HyperFramesBackend:
         return f"""
     // Scene {sid} animations at t={start:.2f}s
     tl.fromTo("#content_{sid}", {{ opacity: 0, scale: 0.96 }}, {{ opacity: 1, scale: 1, duration: {fade_in:.2f}, ease: "power2.out" }}, {start:.2f});
-    tl.fromTo("#title_{sid}", {{ y: 35, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }}, {start + 0.1:.2f});
-    tl.fromTo("#sub_{sid}", {{ y: 20, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }}, {start + 0.25:.2f});
+    if (document.querySelector("#title_{sid}")) {{
+      tl.fromTo("#title_{sid}", {{ y: 35, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }}, {start + 0.1:.2f});
+    }}
+    if (document.querySelector("#sub_{sid}")) {{
+      tl.fromTo("#sub_{sid}", {{ y: 20, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }}, {start + 0.25:.2f});
+    }}
     if (document.querySelector("#matrix_{sid}")) {{
       tl.fromTo("#matrix_{sid}", {{ scale: 0.9, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" }}, {start + 0.35:.2f});
     }}
