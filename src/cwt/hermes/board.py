@@ -158,6 +158,7 @@ async def wait_for_completion(
     poll_s: int = 15,
     fail_fast: bool = False,
     stall_threshold_s: int = 180,
+    expected_ids: set[str] | None = None,
 ) -> RunSummary:
     """Poll the board until every card is done, or fail loudly.
 
@@ -177,6 +178,8 @@ async def wait_for_completion(
 
     while True:
         cards = list_cards(board)
+        if expected_ids:
+            cards = [c for c in cards if c.get("id") in expected_ids]
         signature = tuple(sorted((c["id"], c["status"]) for c in cards))
         done = [c for c in cards if c["status"] == "done"]
         bad = [c for c in cards if c["status"] in TERMINAL_BAD]

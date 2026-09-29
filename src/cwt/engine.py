@@ -617,13 +617,14 @@ async def _run_hermes(
     if force_stage:
         _hermes_force_invalidate(settings, paths, force_stage)
 
-    seed(run_id, paths.run_dir, settings.board)
+    seeded_ids = seed(run_id, paths.run_dir, settings.board)
 
     summary = await wait_for_completion(
         settings.board,
         timeout_s=settings.run_timeout_seconds,
         stall_threshold_s=settings.stall_threshold_seconds,
         fail_fast=True,
+        expected_ids=set(seeded_ids.values()),
     )
     _ = (PipelineBlocked, PipelineTimeout)
 
